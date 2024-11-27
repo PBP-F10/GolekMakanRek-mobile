@@ -21,9 +21,9 @@ class MyApp extends StatelessWidget {
         title: 'Golek Makan Rek',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: Colors.deepPurple,
-          ).copyWith(secondary: Colors.deepPurple[400]),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color.fromARGB(255, 255, 179, 0),
+          ).copyWith(secondary: const Color(0xFFFFFFFF)), 
         ),
         home: const LoginPage(),
       ),
