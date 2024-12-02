@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:golekmakanrek_mobile/homepage/screens/food_list.dart';
+import 'package:golekmakanrek_mobile/homepage/screens/item_list.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -34,7 +34,7 @@ class LeftDrawer extends StatelessWidget {
                 // Route menu ke halaman mood
                 Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const FoodPage()),
+                    MaterialPageRoute(builder: (context) => const ItemList()),
                 );
             },
           ),
