@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:golekmakanrek_mobile/screens/menu.dart';
-import 'package:golekmakanrek_mobile/screens/food_review/restaurant_list.dart';
+import 'package:golekmakanrek_mobile/screens/restaurant_list.dart';
+
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -17,7 +18,7 @@ class LeftDrawer extends StatelessWidget {
             child: const Column(
               children: [
                 Text(
-                  'Mental Health Tracker',
+                  'GolekMakanRek!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 24,
@@ -27,7 +28,7 @@ class LeftDrawer extends StatelessWidget {
                 ),
                 Padding(padding: EdgeInsets.all(8)),
                 Text(
-                  "Ayo jaga kesehatan mentalmu setiap hari disini!",
+                  "Jelajahi Kuliner Surabaya",
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.normal,
@@ -38,28 +39,29 @@ class LeftDrawer extends StatelessWidget {
               ],
             ),
           ),
-            ListTile(
-              leading: const Icon(Icons.home_outlined),
-              title: const Text('Halaman Utama'),
-              // Bagian redirection ke MyHomePage
-              onTap: () {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MyHomePage(),
-                    ));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.add_reaction_rounded),
-              title: const Text('Daftar Mood'),
-              onTap: () {
-                  // Route menu ke halaman mood
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const RestaurantListPage()),
-                  );
-              },
+          ListTile(
+            leading: const Icon(Icons.home_outlined),
+            title: const Text('Halaman Utama'),
+            // Bagian redirection ke MyHomePage
+            onTap: () {
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MyHomePage(),
+                  ));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.restaurant),
+            title: const Text('Daftar Restoran'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RestaurantListPage(),
+                ),
+              );
+            },
           ),
         ],
       ),
