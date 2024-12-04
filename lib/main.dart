@@ -18,10 +18,13 @@ class MyApp extends StatelessWidget {
         return request;
       },
       child: MaterialApp(
-        title: '',
-        theme: ThemeData(),
+        title: 'GolekMakanRek!',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
         home: const LoginPage(),
-      )
+      ),
     );
   }
 }
