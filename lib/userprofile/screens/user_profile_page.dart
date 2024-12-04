@@ -1,47 +1,27 @@
 import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
-import '../screens/user_profile_page.dart';
+import '../../authentication/login.dart';
+import '../models/userprofile.dart';
+import '../widgets/form_modal_dialog.dart';
+import '../widgets/profile_section.dart';
 
-class FormModalDialog extends StatefulWidget {
-  final GlobalKey<FormState> formKey;
-  final TextEditingController dateOfBirthController;
-  final String description;
-  final String firstName;
-  final String lastName;
-  final DateTime dateOfBirth;
-  final String gender;
-  final String location;
-  final String phoneNumber;
-  final String email;
-  final bool isFiiled;
-
-  const FormModalDialog({
-    super.key,
-    required this.formKey,
-    required this.dateOfBirthController,
-    required this.description,
-    required this.firstName,
-    required this.lastName,
-    required this.dateOfBirth,
-    required this.gender,
-    required this.location,
-    required this.phoneNumber,
-    required this.email,
-    this.isFiiled = true,
-  });
+class UserProfilePage extends StatefulWidget {
+  const UserProfilePage({super.key});
 
   @override
-  State<FormModalDialog> createState() => _FormModalDialogState();
+  State<UserProfilePage> createState() => _UserProfilePageState();
 }
 
-class _FormModalDialogState extends State<FormModalDialog> {
+class _UserProfilePageState extends State<UserProfilePage> {
   final _formKey = GlobalKey<FormState>();
   final _dateOfBirthController = TextEditingController();
+  String _username = "";
   String _description = "";
   String _firstName = "";
   String _lastName = "";
@@ -50,428 +30,321 @@ class _FormModalDialogState extends State<FormModalDialog> {
   String _location = "";
   String _phoneNumber = "";
   String _email = "";
-  bool _isFiiled = true;
 
   @override
   void initState() {
     super.initState();
-
-    _description = widget.description;
-    _firstName = widget.firstName;
-    _lastName = widget.lastName;
-    _dateOfBirth = widget.dateOfBirth;
-    _gender = widget.gender;
-    _location = widget.location;
-    _phoneNumber = widget.phoneNumber;
-    _email = widget.email;
-    _isFiiled = widget.isFiiled;
-
-    _dateOfBirthController.text = _dateOfBirth.toLocal().toString().split(' ')[0];
+    // Initialize the controller with the current date
   }
 
   @override
   void dispose() {
+    // Dispose of the controller when the widget is disposed
     _dateOfBirthController.dispose();
     super.dispose();
   }
 
-  void showCustomDialog(String titleText, String value) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          titleText,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold
-          ),
-        ),
-        content: Text(value),
-        actions: [
-          TextButton(
-            style: ButtonStyle(
-              shape: const WidgetStatePropertyAll(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10))
-                )
-              )
-            ),
-            child: const Text(
-              'OK', 
-              style: TextStyle(
-                color: Colors.white
-                ),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ],
+  Future<UserProfile> fetchUserProfile(CookieRequest request) async {
+    final response = await request.get('http://10.0.2.2:8000/userprofile/userprofile/get');
+
+    var data = response;
+
+    // Create UserProfile object with data from the response
+    UserProfile newUserProfile = UserProfile(
+      profile: Profile(
+        username: data['profile']['username'] ?? '',
+        description: data['profile']['description'] ?? '',
+        firstName: data['profile']['first_name'] ?? '',
+        lastName: data['profile']['last_name'] ?? '',
+        dateOfBirth: data['profile']['date_of_birth'] != null
+          ? DateTime.parse(data['profile']['date_of_birth'])
+          : DateTime.now(),
+        gender: data['profile']['gender'] ?? '',
+        location: data['profile']['location'] ?? '',
+        phoneNumber: data['profile']['phone_number'] ?? '',
+        email: data['profile']['email'] ?? '',
       ),
+      created: data['created'] ?? '',
     );
+
+    // Update your local variables with the profile data
+    _username = data['profile']['username'] ?? '';
+    _description = data['profile']['description'] ?? '';
+    _firstName = data['profile']['first_name'] ?? '';
+    _lastName = data['profile']['last_name'] ?? '';
+    _dateOfBirth = data['profile']['date_of_birth'] != null
+        ? DateTime.parse(data['profile']['date_of_birth'])
+        : DateTime.now();
+    _gender = data['profile']['gender'] ?? '';
+    _location = data['profile']['location'] ?? '';
+    _phoneNumber = data['profile']['phone_number'] ?? '';
+    _email = data['profile']['email'] ?? '';
+
+     // Check if any profile field is empty and trigger a dialog if so
+    bool isProfileIncomplete = data['profile']['username'] == null ||
+                              data['profile']['username'] == '' ||
+                              data['profile']['first_name'] == null ||
+                              data['profile']['first_name'] == '' ||
+                              data['profile']['last_name'] == null ||
+                              data['profile']['last_name'] == '' ||
+                              data['profile']['date_of_birth'] == null ||
+                              data['profile']['gender'] == null ||
+                              data['profile']['location'] == null ||
+                              data['profile']['phone_number'] == null ||
+                              data['profile']['email'] == null ||
+                              data['profile']['email'] == '';
+
+    if (isProfileIncomplete) {
+      // Trigger the dialog to allow the user to complete their profile
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please fill this form"),
+      ));
+      showDialog(
+        context: context,
+        barrierDismissible: false, 
+        builder: (BuildContext context) {
+          return FormModalDialog(
+            isFiiled: false,
+            formKey: _formKey, 
+            dateOfBirthController: _dateOfBirthController, 
+            description: _description, 
+            firstName: _firstName, 
+            lastName: _lastName, 
+            dateOfBirth: _dateOfBirth, 
+            gender: _gender, 
+            location: _location, 
+            phoneNumber: _phoneNumber, 
+            email: _email
+          );
+        }
+      );
+    }
+
+
+    return newUserProfile;
   }
+
 
   @override
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
 
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            const Text(
-              'Edit Profile',
-              style: TextStyle(
-                fontSize: 27.5,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 30,),
-            Form(
-              key: _formKey,
-              child: Column(
+    return Scaffold(
+      body: FutureBuilder(
+        future: fetchUserProfile(request), 
+        builder: (context, AsyncSnapshot snapshot) {
+          if (snapshot.data == null) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            if ((!snapshot.hasData)) {
+              return const Column(
                 children: [
-                  TextFormField(
-                    initialValue: _firstName,
-                    onChanged: (String? value) {
-                      setState(() {
-                        _firstName = value!;
-                      });
-                    },
-                    validator: (String? value) {
-                      if (value == null || value.isEmpty) {
-                        return "First name must be filled";
+                  Text(
+                    'Tidak berhasil mendapatkan data',
+                    style: TextStyle(fontSize: 20, color: Color(0xff59A5D8)),
+                  ),
+                  SizedBox(height: 8),
+                ],
+              );
+            } else {
+              UserProfile userProfile = snapshot.data!;
+              return buildProfile(userProfile, context, request);
+            }
+          }
+        }
+      ),
+    );
+  }
+
+  ListView buildProfile(
+    UserProfile userProfile, BuildContext context, CookieRequest request
+  ) {
+    return ListView(
+      children: [
+        Container(
+          height: 275,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/bg_web.png'),
+              fit: BoxFit.fitWidth
+            )
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                top: 20,
+                left: 20,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Icon(
+                    Icons.arrow_back,
+                    size: 30,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: InkWell(
+                  onTap: () {
+                    showDialog(
+                      context: context, 
+                      builder: (BuildContext context) {
+                        return FormModalDialog(
+                          formKey: _formKey, 
+                          dateOfBirthController: _dateOfBirthController, 
+                          description: _description, 
+                          firstName: _firstName, 
+                          lastName: _lastName, 
+                          dateOfBirth: _dateOfBirth, 
+                          gender: _gender, 
+                          location: _location, 
+                          phoneNumber: _phoneNumber, 
+                          email: _email
+                        );
                       }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'First Name',
-                      border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade200)
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade900, width: 2)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2.5),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(10)
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.edit, size: 20,),
+                        SizedBox(width: 5,),
+                        Text(
+                          "Edit Profile", 
+                          style: TextStyle(fontWeight: FontWeight.bold),),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 15,),
-                  TextFormField(
-                    initialValue: _lastName,
-                    onChanged: (String? value) {
-                      setState(() {
-                        _lastName = value!;
-                      });
-                    },
-                    validator: (String? value) {
-                      if (value == null || value.isEmpty) {
-                        return "Last name must be filled";
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Last Name',
-                      border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade200)
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade900, width: 2)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2.5),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                  ),
-                  const SizedBox(height: 15,),
-                  TextFormField(
-                    initialValue: _description,
-                    onChanged: (String? value) {
-                      setState(() {
-                        _description = value!;
-                      });
-                    },
-                    validator: (String? value) {
-                      if (value == null || value.isEmpty) {
-                        return "Description must be filled";
-                      }
-                      return null;
-                    },
-                    maxLines: 4,
-                    decoration: InputDecoration(
-                      labelText: 'Description',
-                      border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade200)
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade900, width: 2)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2.5),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                  ),
-                  const SizedBox(height: 15,),
-                  TextFormField(
-                    controller: _dateOfBirthController,
-                    readOnly: true,
-                    onTap: () async {
-                      DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: _dateOfBirth,
-                        firstDate: DateTime(1900),
-                        lastDate: DateTime.now(),
-                      );
-                      if (pickedDate != null && pickedDate != _dateOfBirth) {
-                        setState(() {
-                          _dateOfBirth = pickedDate;
-                          // Update the controller with the new date
-                          _dateOfBirthController.text = _dateOfBirth.toIso8601String().split('T').first;
-                        });
-                      }
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Birth of Date',
-                      suffixIcon: const Icon(Icons.calendar_today),
-                      border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade200)
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade900, width: 2)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2.5),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                  ),
-                  const SizedBox(height: 15,),
-                  DropdownButtonFormField<String>(
-                    value: _gender.isEmpty ? null : _gender, // set the initial value
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _gender = newValue!;
-                      });
-                    },
-                    validator: (String? value) {
-                      if (value == null || value.isEmpty) {
-                        return "Gender must be filled";
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Gender',
-                      border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade200)
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade900, width: 2)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2.5),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                    items: <String>['Female', 'Male', 'Others']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 15,),
-                  TextFormField(
-                    initialValue: _location,
-                    onChanged: (String? value) {
-                      setState(() {
-                        _location = value!;
-                      });
-                    },
-                    validator: (String? value) {
-                      if (value == null || value.isEmpty) {
-                        return "Location must be filled";
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Location',
-                      border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade200)
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade900, width: 2)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2.5),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                  ),
-                  const SizedBox(height: 15,),
-                  TextFormField(
-                    keyboardType: TextInputType.number,
-                    initialValue: _phoneNumber,
-                    onChanged: (String? value) {
-                      setState(() {
-                        _phoneNumber = value!;
-                      });
-                    },
-                    validator: (String? value) {
-                      if (value == null || value.isEmpty) {
-                        return "Phone number must be filled";
-                      }
-                      if (int.tryParse(value) == null) {
-                      return "Phone number must be integer numbers!";
-                    }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Phone Number',
-                      border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade200)
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade900, width: 2)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2.5),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                  ),
-                  const SizedBox(height: 15,),
-                  TextFormField(
-                    initialValue: _email,
-                    onChanged: (String? value) {
-                      setState(() {
-                        _email = value!;
-                      });
-                    },
-                    validator: (String? value) {
-                      if (value == null || value.isEmpty) {
-                        return "Email must be filled!";
-                      }
-                      if (!value.contains('@')) {
-                        return "It must be a valid email!";
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade200)
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
-                        borderSide: BorderSide(color: Colors.grey.shade900, width: 2)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2.5),
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                    ),
-                  ),
-                  const SizedBox(height: 15,),
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Container(),
-                      ),
-                      Expanded(
-                        flex: 3,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton( 
-                                onPressed: () async {
-                                  if (_formKey.currentState!.validate()) {
-                                      print(_dateOfBirthController.text);
-                                      final response = await request.postJson(
-                                        "http://10.0.2.2:8000/userprofile/userprofile/update-external",
-                                        jsonEncode(<String, dynamic>{
-                                          'description': _description,
-                                          'first_name': _firstName,
-                                          'last_name': _lastName,
-                                          'date_of_birth': "${_dateOfBirth.year.toString().padLeft(4, '0')}-${_dateOfBirth.month.toString().padLeft(2, '0')}-${_dateOfBirth.day.toString().padLeft(2, '0')}", // Format as YYYY-MM-DD,
-                                          'gender': _gender,
-                                          'location': _location,
-                                          'phone_number': _phoneNumber,
-                                          'email': _email,
-                                        }),
-                                      );
-                                      if (context.mounted) {
-                                          if (response['message'] == 'Profile updated successfully!') {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(const SnackBar(
-                                              content: Text("Profile updated successfully!"),
-                                              ));
-                                              Navigator.pop(context);
-                                              Navigator.pop(context);
-                                              Navigator.push(context, MaterialPageRoute(builder: (context) => const UserProfilePage()));
-                                          } else {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(const SnackBar(
-                                                  content:
-                                                      Text("Profile updated failed!"),
-                                              ));
-                                              print(response);
-                                          }
-                                      }
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  minimumSize: const Size(double.infinity, 40),
-                                  backgroundColor: Colors.green.shade500,
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(10)))),
-                                child: const Text("Save"),
-                              ),
-                            ),
-                            const SizedBox(width: 10,),
-                            Expanded(
-                              child: ElevatedButton( 
-                                onPressed: () {
-                                  if (_isFiiled) {
-                                    Navigator.pop(context);
-                                  }
-                                  else {
-                                    showCustomDialog("Form harus diisi", "Data profil anda kosong, maka form harus diisi");
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  minimumSize: const Size(double.infinity, 40),
-                                  backgroundColor: Colors.red,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(10)),
-                                  )
-                                ),
-                                child: const Text("Cancel"),
-                              ),
-                            ),
-                          ],
+                ),
+              ),
+              Positioned.fill(
+                child: Transform.translate(
+                  offset: const Offset(0, 120),
+                  child: Transform.scale(
+                    scale: 0.6,
+                    child: Container(
+                      width: 80, 
+                      height: 80, 
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle, 
+                        color: Colors.orange.shade800,
+                        image: const DecorationImage(
+                          image: AssetImage('assets/images/user_avatar.png'),
+                          fit: BoxFit.fitHeight, 
+                          colorFilter: ColorFilter.mode(
+                            Colors.orange, BlendMode.color)
                         ),
                       ),
-                    ],
-                  )
-                ],
+                    )
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          )
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 50,),
+              ProfileSection(
+                header: "First Name", 
+                value: userProfile.profile!.firstName.toString()
+              ),
+              const SizedBox(height: 10,),
+               ProfileSection(
+                header: "Last Name", 
+                value: userProfile.profile!.lastName.toString()
+              ),
+              const SizedBox(height: 10,),
+               ProfileSection(
+                header: "Date of Birth", 
+                value: userProfile.profile!.dateOfBirth!.toIso8601String().split('T').first
+              ),
+              const SizedBox(height: 10,),
+               ProfileSection(
+                header: "Gender", 
+                value: userProfile.profile!.gender.toString()
+              ),
+              const SizedBox(height: 10,),
+               ProfileSection(
+                header: "Location", 
+                value: userProfile.profile!.location.toString()
+              ),
+              const SizedBox(height: 10,),
+               ProfileSection(
+                header: "Phone Number", 
+                value: userProfile.profile!.phoneNumber.toString()
+              ),
+              const SizedBox(height: 10,),
+               ProfileSection(
+                header: "Email", 
+                value: userProfile.profile!.email.toString()
+              ),
+              
+              const SizedBox(height: 50,),
+              ElevatedButton(
+                onPressed: () async {
+                  final response = await request.logout(
+                    "http://10.0.2.2:8000/logout-external/");
+                    String message = response["message"];
+                    if (context.mounted) {
+                        if (response['status']) {
+                            String uname = response["username"];
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text("$message Sampai jumpa, $uname."),
+                            ));
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => const LoginPage()),
+                            );
+                        } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text(message),
+                                ),
+                            );
+                        }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  // minimumSize: Size(double.infinity, 50),
+                  backgroundColor: Colors.orange.shade800,
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.all(Radius.circular(10)))),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      (Icons.logout),
+                      size: 30,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text("Log Out", style: TextStyle(fontSize: 18))
+                  ],
+                ),
+              ),
+              const SizedBox(height: 30,)
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
