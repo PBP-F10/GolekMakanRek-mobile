@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:golekmakanrek_mobile/models/restaurant.dart';
+import 'package:golekmakanrek_mobile/restaurant/models/restaurant.dart';
 
 class RestaurantDetailPage extends StatefulWidget {
   final Restaurant restaurant;

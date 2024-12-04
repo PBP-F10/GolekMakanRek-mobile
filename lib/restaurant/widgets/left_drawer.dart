@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:golekmakanrek_mobile/screens/menu.dart';
-import 'package:golekmakanrek_mobile/screens/restaurant_list.dart';
+import 'package:golekmakanrek_mobile/restaurant/screens/menu.dart';
+import 'package:golekmakanrek_mobile/restaurant/screens/restaurant_list.dart';
 
 
 class LeftDrawer extends StatelessWidget {

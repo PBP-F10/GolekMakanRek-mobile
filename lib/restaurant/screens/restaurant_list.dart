@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:golekmakanrek_mobile/models/restaurant.dart';
-import 'package:golekmakanrek_mobile/screens/restaurant_detail.dart';
+import 'package:golekmakanrek_mobile/restaurant/models/restaurant.dart';
+import 'package:golekmakanrek_mobile/restaurant/screens/restaurant_detail.dart';
 
 final List<Restaurant> dummyRestaurants = [
   Restaurant(

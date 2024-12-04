@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'package:golekmakanrek_mobile/screens/menu.dart';
+import 'package:golekmakanrek_mobile/restaurant/screens/menu.dart';
 
 void main() {
   runApp(const MyApp());

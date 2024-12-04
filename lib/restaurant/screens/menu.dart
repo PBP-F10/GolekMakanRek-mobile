@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:golekmakanrek_mobile/widgets/left_drawer.dart';
+import 'package:golekmakanrek_mobile/restaurant/widgets/left_drawer.dart';
 
 class MyHomePage extends StatelessWidget {
     MyHomePage({super.key});
