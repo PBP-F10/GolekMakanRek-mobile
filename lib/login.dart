@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:golekmakanrek_mobile/register.dart';
-import 'package:golekmakanrek_mobile/wishlist.dart';
+import 'package:golekmakanrek_mobile/wishlist/screens/wishlist.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 

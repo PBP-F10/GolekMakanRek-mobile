@@ -3,7 +3,7 @@
 //     final wishlist = wishlistFromJson(jsonString);
 
 import 'dart:convert';
-import 'package:golekmakanrek_mobile/food.dart';
+import 'package:golekmakanrek_mobile/wishlist/models/food.dart';
 
 List<Wishlist> wishlistFromJson(String str) => List<Wishlist>.from(json.decode(str).map((x) => Wishlist.fromJson(x)));
 

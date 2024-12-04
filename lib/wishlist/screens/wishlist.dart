@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:golekmakanrek_mobile/food.dart';
+import 'package:golekmakanrek_mobile/wishlist/models/food.dart';
 import 'package:golekmakanrek_mobile/login.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'package:golekmakanrek_mobile/item.dart';
+import 'package:golekmakanrek_mobile/wishlist/models/item.dart';
 
 
 class WishlistPage extends StatefulWidget {
@@ -112,7 +112,7 @@ class _WishlistPageState extends State<WishlistPage> {
                     padding: const EdgeInsets.all(20.0),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(8.0),
+                      
                       boxShadow: [
                         BoxShadow(
                           color: Colors.grey.withOpacity(0.5),
@@ -128,7 +128,8 @@ class _WishlistPageState extends State<WishlistPage> {
                       children: [
                         Text(
                           snapshot.data![index].fields.food.fields.nama,
-                          style: const TextStyle(
+                          style: TextStyle(
+                            color: Colors.orange[800],
                             fontSize: 18.0,
                             fontWeight: FontWeight.bold,
                           ),
