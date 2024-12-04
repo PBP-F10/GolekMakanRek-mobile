@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
         return request;
       },
       child: MaterialApp(
-        title: 'Mental Health Tracker',
+        title: 'GolekMakanRek!',
         theme: ThemeData(),
         home: const LoginPage(),
       ),
