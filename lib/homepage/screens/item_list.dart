@@ -1,10 +1,11 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:golekmakanrek_mobile/homepage/models/food.dart';
 import 'package:golekmakanrek_mobile/homepage/models/restaurant.dart';
 import 'package:golekmakanrek_mobile/homepage/widgets/left_drawer.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 class ItemList extends StatefulWidget {
   const ItemList({super.key});
@@ -16,29 +17,29 @@ class ItemList extends StatefulWidget {
 class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
-  bool _includeCertainFoodItems = false;
-  final Map<int, bool> _starredItems = {};
-  final Map<int, int> _starCounts = {};
+  bool _favoritedItems = false;
+  final Map<String, bool> _starredItems = {};
+  final Map<String, int> _starCounts = {};
   bool loggedIn = false;
   final TextEditingController _minPriceController = TextEditingController();
   final TextEditingController _maxPriceController = TextEditingController();
   double _currentMinPrice = 0;
   double _currentMaxPrice = 100000;
-  final List<String> _categories = ['Category 1', 'Category 2', 'Category 3'];
+  double _minPrice = 0;
+  double _maxPrice = 0;
+  List<String>? _categories;
   final Map<String, bool> _selectedCategories = {};
+  Future<List<Food>>? _foodFuture;
+  Future<List<Restaurant>>? _restaurantFuture;
+  final NumberFormat _currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    // Initialize star counts for demonstration
-    for (int i = 0; i < 10; i++) {
-      _starCounts[i] = 0;
-    }
-    // Initialize selected categories
-    for (var category in _categories) {
-      _selectedCategories[category] = false;
-    }
+    _foodFuture = fetchFood(context.read<CookieRequest>());
+    _restaurantFuture = fetchRestaurant(context.read<CookieRequest>());
+    fetchFilterData(context.read<CookieRequest>());
   }
 
   Future<List<Food>> fetchFood(CookieRequest request) async {
@@ -54,9 +55,40 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
     for (var d in data) {
       if (d != null) {
         listFood.add(Food.fromJson(d));
+        _starCounts[d['pk']] = (await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/get_food_likes/${d['pk']}'))['count'];
       }
     }
     return listFood;
+  }
+
+  Future<void> _searchFood(String query) async {
+    final request = context.read<CookieRequest>();
+    final response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/search/food/?nama=$query');
+    var data = response;
+    List<Food> listFood = [];
+    for (var d in data) {
+      if (d != null) {
+        listFood.add(Food.fromJson(d));
+      }
+    }
+    setState(() {
+      _foodFuture = Future.value(listFood);
+    });
+  }
+
+  Future<void> _searchRestaurant(String query) async {
+    final request = context.read<CookieRequest>();
+    final response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/search/restaurant/?nama=$query');
+    var data = response;
+    List<Restaurant> listRestaurant = [];
+    for (var d in data) {
+      if (d != null) {
+        listRestaurant.add(Restaurant.fromJson(d));
+      }
+    }
+    setState(() {
+      _restaurantFuture = Future.value(listRestaurant);
+    });
   }
 
   Future<List<Restaurant>> fetchRestaurant(CookieRequest request) async {
@@ -75,10 +107,28 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
     return listResto;
   }
 
+  Future<void> fetchFilterData(CookieRequest request) async {
+    var response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/get_search_options/');
+    var data = response;
+
+    setState(() {
+      _categories = List<String>.from(data['foodCategories']);
+      _currentMinPrice = data['minPrice'].toDouble();
+      _currentMaxPrice = data['maxPrice'].toDouble();
+      _minPrice = data['minPrice'].toDouble();
+      _maxPrice = data['maxPrice'].toDouble();
+    });
+
+    // Initialize selected categories
+    for (var category in _categories!) {
+      _selectedCategories[category] = false;
+    }
+  }
+
   void _showFilterOptions() {
     double initialSize; 
     if (_tabController.index == 0) {
-      initialSize = 0.8;
+      initialSize = 0.7;
     }
     else {
       initialSize = 0.4;
@@ -92,8 +142,6 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
           builder: (BuildContext context, StateSetter setState) {
             return DraggableScrollableSheet(
               expand: false,
-              snap: true,
-              snapSizes: const [0.5, 0.8],
               initialChildSize: initialSize,
               minChildSize: 0.4,
               maxChildSize: 0.9,
@@ -127,19 +175,19 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                           const SizedBox(height: 10),
                           RangeSlider(
                             values: RangeValues(_currentMinPrice, _currentMaxPrice),
-                            min: 0,
-                            max: 100000,
-                            divisions: 100,
+                            min: _minPrice,
+                            max: _maxPrice,
+                            divisions: ((_maxPrice - _minPrice) / 1000).round(),
                             labels: RangeLabels(
                               _currentMinPrice.round().toString(),
                               _currentMaxPrice.round().toString(),
                             ),
                             onChanged: (RangeValues values) {
                               setState(() {
-                                _currentMinPrice = values.start;
-                                _currentMaxPrice = values.end;
-                                _minPriceController.text = values.start.round().toString();
-                                _maxPriceController.text = values.end.round().toString();
+                                _currentMinPrice = (values.start / 1000).round() * 1000;
+                                _currentMaxPrice = (values.end / 1000).round() * 1000;
+                                _minPriceController.text = _currentMinPrice.round().toString();
+                                _maxPriceController.text = _currentMaxPrice.round().toString();
                               });
                             },
                           ),
@@ -151,6 +199,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                   controller: _minPriceController,
                                   decoration: InputDecoration(
                                     labelText: 'Min Price',
+                                    prefixIcon: const Icon(Icons.attach_money),
                                     border: OutlineInputBorder(
                                       borderSide: const BorderSide(color: Colors.grey),
                                       borderRadius: BorderRadius.circular(8),
@@ -166,7 +215,8 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
                                   ),
                                   keyboardType: TextInputType.number,
-                                  onChanged: (value) {
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                  onSubmitted: (value) {
                                     setState(() {
                                       _currentMinPrice = double.tryParse(value) ?? 0;
                                     });
@@ -179,6 +229,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                   controller: _maxPriceController,
                                   decoration: InputDecoration(
                                     labelText: 'Max Price',
+                                    prefixIcon: const Icon(Icons.attach_money),
                                     border: OutlineInputBorder(
                                       borderSide: const BorderSide(color: Colors.grey),
                                       borderRadius: BorderRadius.circular(8),
@@ -194,7 +245,8 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
                                   ),
                                   keyboardType: TextInputType.number,
-                                  onChanged: (value) {
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                  onSubmitted: (value) {
                                     setState(() {
                                       _currentMaxPrice = double.tryParse(value) ?? 100000;
                                     });
@@ -205,6 +257,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                           ),
                           const SizedBox(height: 20),
                         ],
+                        const SizedBox(height: 20),
                         const Text(
                           'Categories',
                           style: TextStyle(
@@ -215,7 +268,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                         const SizedBox(height: 10),
                         Wrap(
                           spacing: 8.0,
-                          children: _categories.map((category) {
+                          children: _categories!.map((category) {
                             return FilterChip(
                               label: Text(
                                 category,
@@ -225,23 +278,18 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                               ),
                               selected: _selectedCategories[category]!,
                               shape: StadiumBorder(
-                                side: BorderSide(
-                                  color: _selectedCategories[category]! ? Colors.orange : Colors.grey,
-                                ),
+                                side: BorderSide(color: !_selectedCategories[category]! ? Colors.grey : Theme.of(context).colorScheme.primary),
                               ),
                               onSelected: (bool selected) {
                                 setState(() {
                                   _selectedCategories[category] = selected;
                                 });
                               },
-                              backgroundColor: Colors.transparent,
-                              selectedColor: Colors.transparent,
-                              showCheckmark: false,
                             );
                           }).toList(),
                         ),
                         const SizedBox(height: 20),
-                        if (_tabController.index == 0) ...[
+                        if (_tabController.index == 0 && loggedIn) ...[
                           const Text(
                             'Show Favorited Items',
                             style: TextStyle(
@@ -262,15 +310,15 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                 ),
                               ],
                             ),
-                            selected: _includeCertainFoodItems,
+                            selected: _favoritedItems,
                             shape: StadiumBorder(
                               side: BorderSide(
-                                color: _includeCertainFoodItems ? Colors.orange : Colors.grey,
+                                color: _favoritedItems ? Colors.orange : Colors.grey,
                               ),
                             ),
                             onSelected: (bool selected) {
                               setState(() {
-                                _includeCertainFoodItems = selected;
+                                _favoritedItems = selected;
                               });
                             },
                             backgroundColor: Colors.transparent,
@@ -279,9 +327,16 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                           ),
                           const SizedBox(height: 10),
                         ],
+                        const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () {
                             // Handle filter submission
+                            if (_tabController.index == 0) {
+                              _searchFood("");
+                            }
+                            else {
+                              _searchRestaurant("");
+                            }
                             Navigator.pop(context);
                           },
                           style: ElevatedButton.styleFrom(
@@ -312,9 +367,12 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
     );
   }
 
+  String formatPrice(int price) {
+    return _currencyFormat.format(price);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final request = context.watch<CookieRequest>();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -331,6 +389,14 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(horizontal: 16),
             ),
+            onSubmitted: (value) {
+              if (_tabController.index == 0) {
+                _searchFood(value);
+              }
+              else {
+                _searchRestaurant(value);
+              }
+            },
           ),
         ),
         actions: [
@@ -356,26 +422,26 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
         controller: _tabController,
         children: [
           FutureBuilder(
-            future: fetchFood(request),
+            future: _foodFuture,
             builder: (context, AsyncSnapshot<List<Food>> snapshot) {
               if (snapshot.data == null) {
                 return const Center(child: CircularProgressIndicator());
               } else {
                 if (snapshot.data!.isEmpty) {
-                  return Center(
+                  return const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image(
-                          image: const AssetImage('assets/images/sad_image.png'),
-                          width: min(MediaQuery.of(context).size.width * 0.4, 150),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Sorry, no food items available yet!',
+                        // Image(
+                        //   image: const AssetImage('assets/images/sad_image.png'),
+                        //   width: min(MediaQuery.of(context).size.width * 0.4, 150),
+                        // ),
+                        SizedBox(height: 20),
+                        Text(
+                          'No food items found!',
                           style: TextStyle(
                             fontSize: 18.0,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -412,11 +478,47 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                       snapshot.data![index].fields.nama,
                                       style: const TextStyle(
                                         fontSize: 18.0,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                     const SizedBox(height: 10),
-                                    Text("Rp ${snapshot.data![index].fields.harga}"),
+                                    Row(
+                                      children: [
+                                        if (snapshot.data![index].fields.diskon > 0) ...[
+                                          Text(
+                                            formatPrice(snapshot.data![index].fields.harga),
+                                            style: const TextStyle(
+                                              color: Colors.red,
+                                              decoration: TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            formatPrice((snapshot.data![index].fields.harga * (1 - snapshot.data![index].fields.diskon / 100)).toInt()),
+                                            style: const TextStyle(
+                                              color: Colors.green,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: Colors.green,
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              "-${snapshot.data![index].fields.diskon}%",
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ] else ...[
+                                          Text(formatPrice(snapshot.data![index].fields.harga)),
+                                        ],
+                                      ],
+                                    ),
                                     const SizedBox(height: 10),
                                     Text(snapshot.data![index].fields.deskripsi.toString().trim()),
                                   ],
@@ -426,19 +528,29 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                 children: [
                                   IconButton(
                                     icon: Icon(
-                                      _starredItems[index] == true ? Icons.star : Icons.star_border,
-                                      color: _starredItems[index] == true ? Colors.yellow : null,
+                                      _starredItems[snapshot.data![index].pk] == true ? Icons.star : Icons.star_border,
+                                      color: _starredItems[snapshot.data![index].pk] == true ? Colors.yellow : null,
                                     ),
                                     onPressed: () {
-                                      setState(() {
-                                        _starredItems[index] = !_starredItems[index]!;
-                                        _starCounts[index] = _starredItems[index] == true
-                                            ? (_starCounts[index] ?? 0) + 1
-                                            : (_starCounts[index] ?? 1) - 1;
-                                      });
+                                      if (!loggedIn) {
+                                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('You must be logged in to favorite items!'),
+                                          ),
+                                        );
+                                      }
+                                      else {
+                                        setState(() {
+                                          _starredItems[snapshot.data![index].pk] = !_starredItems[snapshot.data![index].pk]!;
+                                          _starCounts[snapshot.data![index].pk] = _starredItems[snapshot.data![index].pk] == true
+                                              ? (_starCounts[snapshot.data![index].pk] ?? 0) + 1
+                                              : (_starCounts[snapshot.data![index].pk] ?? 1) - 1;
+                                        });
+                                      }
                                     },
                                   ),
-                                  Text(_starCounts[index].toString()),
+                                  Text(_starCounts[snapshot.data![index].pk].toString()),
                                 ],
                               ),
                             ],
@@ -452,26 +564,26 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
             },
           ),
           FutureBuilder(
-            future: fetchRestaurant(request),
+            future: _restaurantFuture,
             builder: (context, AsyncSnapshot<List<Restaurant>> snapshot) {
               if (snapshot.data == null) {
                 return const Center(child: CircularProgressIndicator());
               } else {
                 if (snapshot.data!.isEmpty) {
-                  return Center(
+                  return const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image(
-                          image: const AssetImage('assets/images/sad_image.png'),
-                          width: min(MediaQuery.of(context).size.width * 0.4, 150),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Sorry, no restaurants available yet!',
+                        // Image(
+                        //   image: const AssetImage('assets/images/sad_image.png'),
+                        //   width: min(MediaQuery.of(context).size.width * 0.4, 150),
+                        // ),
+                        SizedBox(height: 20),
+                        Text(
+                          'No restaurants found!',
                           style: TextStyle(
                             fontSize: 18.0,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -505,7 +617,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                 snapshot.data![index].fields.nama,
                                 style: const TextStyle(
                                   fontSize: 18.0,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               const SizedBox(height: 10),
