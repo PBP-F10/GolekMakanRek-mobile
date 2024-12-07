@@ -401,6 +401,117 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
     );
   }
 
+  void _showCategoryModal() {
+    String? tempCategory = _selectedCategory;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return SizedBox(
+          height: MediaQuery.of(context).size.height * 0.8,
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setModalState) {
+              return Container(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Select Category',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          RadioListTile<String?>(
+                            title: const Text('All'),
+                            value: null,
+                            groupValue: tempCategory,
+                            onChanged: (value) {
+                              setModalState(() => tempCategory = value);
+                            },
+                          ),
+                          ..._categories?.map(
+                            (category) => RadioListTile<String>(
+                              title: Text(category),
+                              value: category,
+                              groupValue: tempCategory,
+                              onChanged: (value) {
+                                setModalState(() => tempCategory = value);
+                              },
+                            ),
+                          ) ?? [],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide(color: Theme.of(context).colorScheme.primary),
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _selectedCategory = tempCategory;
+                                if (_tabController.index == 0) {
+                                  _searchFood(_searchController.text, tempCategory ?? "", _currentMinPrice, _currentMaxPrice, _favoritedItems);
+                                } else {
+                                  _searchRestaurant(_searchController.text, tempCategory ?? "");
+                                }
+                              });
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text(
+                              'Apply',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
   String formatPrice(int price) {
     return _currencyFormat.format(price);
   }
@@ -508,10 +619,63 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                     Tab(text: 'Restaurant'),
                   ],
                   indicatorWeight: 3,
-                  dividerColor: Colors.grey[100], // Adds a subtle divider between tabs
-                  indicatorSize: TabBarIndicatorSize.tab, // Makes indicator span full tab width
+                  dividerColor: Colors.grey[100],
+                  indicatorSize: TabBarIndicatorSize.tab,
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Wrap(
+                    spacing: 8,
+                    children: [
+                      FilterChip(
+                        label: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.category, size: 16),
+                            const SizedBox(width: 4),
+                            Text(_selectedCategory ?? 'All Categories'),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.arrow_drop_down, size: 16),
+                          ],
+                        ),
+                        selected: _selectedCategory != null,
+                        onSelected: (_) => _showCategoryModal(),
+                        shape: StadiumBorder(
+                          side: BorderSide(
+                            color: _selectedCategory != null ? Theme.of(context).primaryColor : Colors.grey,
+                          ),
+                        ),
+                      ),
+                      if (loggedIn)
+                        FilterChip(
+                          label: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.star, size: 16, color: Colors.amber),
+                              SizedBox(width: 4),
+                              Text('Favorites'),
+                            ],
+                          ),
+                          selected: _favoritedItems,
+                          onSelected: (bool selected) {
+                            setState(() {
+                              _favoritedItems = selected;
+                              if (_tabController.index == 0) {
+                                _searchFood(_searchController.text, _selectedCategory ?? "", _currentMinPrice, _currentMaxPrice, _favoritedItems);
+                              }
+                            });
+                          },
+                          shape: StadiumBorder(
+                            side: BorderSide(
+                              color: _favoritedItems ? Theme.of(context).primaryColor : Colors.grey,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
+              pinned: true,
             ),
           ];
         },
@@ -773,14 +937,15 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
 }
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate(this._tabBar);
+  _SliverAppBarDelegate(this._tabBar, this._chips);
 
   final TabBar _tabBar;
+  final Widget _chips;
 
   @override
-  double get minExtent => _tabBar.preferredSize.height;
+  double get minExtent => _tabBar.preferredSize.height + 56; // Add height for chips
   @override
-  double get maxExtent => _tabBar.preferredSize.height;
+  double get maxExtent => _tabBar.preferredSize.height + 56;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -792,8 +957,14 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
             width: 1,
           ),
         ),
+        color: Colors.white,
       ),
-      child: _tabBar
+      child: Column(
+        children: [
+          _tabBar,
+          _chips,
+        ],
+      ),
     );
   }
 
