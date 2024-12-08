@@ -30,12 +30,16 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   double _currentMaxPrice = 0;
   double _minPrice = 0;
   double _maxPrice = 0;
+  int _totalFoods = 0;
+  int _totalRestaurants = 0;
   List<String>? _categories;
   final Map<String, bool> _selectedCategories = {};
   Future<List<Food>>? _foodFuture;
   Future<List<Restaurant>>? _restaurantFuture;
   final NumberFormat _currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
   String? _selectedCategory;
+  bool _isFilterLoading = true; // Add this line
+  bool _isListLoading = false;  // Add this line
 
   @override
   void initState() {
@@ -43,7 +47,11 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
     _tabController = TabController(length: 2, vsync: this);
     _foodFuture = fetchFood(context.read<CookieRequest>());
     _restaurantFuture = fetchRestaurant(context.read<CookieRequest>());
-    fetchFilterData(context.read<CookieRequest>());
+    fetchFilterData(context.read<CookieRequest>()).then((_) {
+      setState(() {
+        _isFilterLoading = false;
+      });
+    });
   }
 
   Future<List<Food>> fetchFood(CookieRequest request) async {
@@ -72,12 +80,13 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
         _starCounts[d['pk']] = (await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/get_food_likes/${d['pk']}'))['count'];
       }
     }
+    _totalFoods = listFood.length;
     return listFood;
   }
 
   Future<void> _searchFood(String name, String category, double minPrice, double maxPrice, bool likeFilter) async {
     setState(() {
-      _foodFuture = null;
+      _isListLoading = true;
     });
     var searchURL = Uri.https(
       'joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id',
@@ -104,12 +113,13 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
     }
     setState(() {
       _foodFuture = Future.value(listFood);
+      _isListLoading = false;
     });
   }
 
   Future<void> _searchRestaurant(String name, String category) async {
     setState(() {
-      _restaurantFuture = null;
+      _isListLoading = true;
     });
     final request = context.read<CookieRequest>();
     final response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/search/restaurant/?nama=$name');
@@ -122,6 +132,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
     }
     setState(() {
       _restaurantFuture = Future.value(listRestaurant);
+      _isListLoading = false;
     });
   }
 
@@ -138,6 +149,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
         listResto.add(Restaurant.fromJson(d));
       }
     }
+    _totalRestaurants = listResto.length;
     return listResto;
   }
 
@@ -168,20 +180,34 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   }
 
   void _showFilterOptions() {
-    double initialSize; 
-    if (_tabController.index == 0) {
-      initialSize = 0.7;
+    double initialSize = _tabController.index == 0 ? 0.8 : 0.4;
+    // Create temporary variables and ensure they're within bounds
+    double tempMinPrice = min(max(_currentMinPrice, _minPrice), _maxPrice);
+    double tempMaxPrice = min(max(_currentMaxPrice, _minPrice), _maxPrice);
+    String? tempCategory = _selectedCategory;
+    bool tempFavorited = _favoritedItems;
+    
+    if (_isFilterLoading) {
+      // If filters are still loading, wait for them to complete first
+      fetchFilterData(context.read<CookieRequest>()).then((_) {
+        // Update the temporary values after filter data is loaded
+        tempMinPrice = min(max(_currentMinPrice, _minPrice), _maxPrice);
+        tempMaxPrice = min(max(_currentMaxPrice, _minPrice), _maxPrice);
+        _showFilterSheet(initialSize, tempMinPrice, tempMaxPrice, tempCategory, tempFavorited);
+      });
+    } else {
+      _showFilterSheet(initialSize, tempMinPrice, tempMaxPrice, tempCategory, tempFavorited);
     }
-    else {
-      initialSize = 0.4;
-    }
+  }
+
+  void _showFilterSheet(double initialSize, double tempMinPrice, double tempMaxPrice, String? tempCategory, bool tempFavorited) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
       builder: (BuildContext context) {
         return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
+          builder: (BuildContext context, StateSetter setModalState) {
             return DraggableScrollableSheet(
               expand: false,
               initialChildSize: initialSize,
@@ -194,7 +220,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                     controller: scrollController,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start, // Align items to the left
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Center( // Center the title
                           child: Text(
@@ -216,20 +242,22 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                           ),
                           const SizedBox(height: 10),
                           RangeSlider(
-                            values: RangeValues(_currentMinPrice, _currentMaxPrice),
+                            values: RangeValues(tempMinPrice, tempMaxPrice),
                             min: _minPrice,
                             max: _maxPrice,
                             divisions: max(((_maxPrice - _minPrice) / 1000).round(), 1),
                             labels: RangeLabels(
-                              _currentMinPrice.round().toString(),
-                              _currentMaxPrice.round().toString(),
+                              _currencyFormat.format(tempMinPrice),
+                              _currencyFormat.format(tempMaxPrice),
                             ),
                             onChanged: (RangeValues values) {
-                              setState(() {
-                                _currentMinPrice = (values.start / 1000).round() * 1000;
-                                _currentMaxPrice = (values.end / 1000).round() * 1000;
-                                _minPriceController.text = _currentMinPrice.round().toString();
-                                _maxPriceController.text = _currentMaxPrice.round().toString();
+                              setModalState(() {
+                                tempMinPrice = (values.start / 1000).round() * 1000;
+                                tempMaxPrice = (values.end / 1000).round() * 1000;
+                                
+                                // Update the text controllers
+                                _minPriceController.text = tempMinPrice.toInt().toString();
+                                _maxPriceController.text = tempMaxPrice.toInt().toString();
                               });
                             },
                           ),
@@ -259,8 +287,8 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                   keyboardType: TextInputType.number,
                                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                   onSubmitted: (value) {
-                                    setState(() {
-                                      _currentMinPrice = double.tryParse(value) ?? 0;
+                                    setModalState(() {
+                                      tempMinPrice = double.tryParse(value) ?? 0;
                                     });
                                   },
                                 ),
@@ -289,8 +317,8 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                   keyboardType: TextInputType.number,
                                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                   onSubmitted: (value) {
-                                    setState(() {
-                                      _currentMaxPrice = double.tryParse(value) ?? _maxPrice;
+                                    setModalState(() {
+                                      tempMaxPrice = double.tryParse(value) ?? _maxPrice;
                                     });
                                   },
                                 ),
@@ -309,7 +337,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                         ),
                         const SizedBox(height: 10),
                         DropdownMenu<String>(
-                          initialSelection: _selectedCategory,
+                          initialSelection: tempCategory,
                           hintText: 'Select a category',
                           menuHeight: MediaQuery.of(context).size.height * 0.3,
                           enableFilter: true,
@@ -326,8 +354,8 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                             ),
                           ],
                           onSelected: (String? newValue) {
-                            setState(() {
-                              _selectedCategory = newValue;
+                            setModalState(() {
+                              tempCategory = newValue;
                             });
                           },
                         ),
@@ -353,15 +381,15 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                 ),
                               ],
                             ),
-                            selected: _favoritedItems,
+                            selected: tempFavorited,
                             shape: StadiumBorder(
                               side: BorderSide(
-                                color: _favoritedItems ? Theme.of(context).primaryColor : Colors.grey,
+                                color: tempFavorited ? Theme.of(context).primaryColor : Colors.grey,
                               ),
                             ),
                             onSelected: (bool selected) {
-                              setState(() {
-                                _favoritedItems = selected;
+                              setModalState(() {
+                                tempFavorited = selected;
                               });
                             },
                             backgroundColor: Colors.transparent,
@@ -374,11 +402,17 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                         ElevatedButton(
                           onPressed: () {
                             // Handle filter submission
+                            setState(() {
+                              _currentMinPrice = tempMinPrice;
+                              _currentMaxPrice = tempMaxPrice;
+                              _selectedCategory = tempCategory;
+                              _favoritedItems = tempFavorited;
+                            });
                             if (_tabController.index == 0) {
-                              _searchFood(_searchController.text, _selectedCategory == null ? "" : _selectedCategory!, _currentMinPrice, _currentMaxPrice, _favoritedItems);
+                              _searchFood(_searchController.text, tempCategory ?? "", tempMinPrice, tempMaxPrice, tempFavorited);
                             }
                             else {
-                              _searchRestaurant(_searchController.text, _selectedCategory == null ? "" : _selectedCategory!);
+                              _searchRestaurant(_searchController.text, tempCategory ?? "");
                             }
                             Navigator.pop(context);
                           },
@@ -405,117 +439,6 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
               },
             );
           },
-        );
-      },
-    );
-  }
-
-  void _showCategoryModal() {
-    String? tempCategory = _selectedCategory;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) {
-        return SizedBox(
-          height: MediaQuery.of(context).size.height * 0.8,
-          child: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setModalState) {
-              return Container(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Select Category',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: ListView(
-                        children: [
-                          RadioListTile<String?>(
-                            title: const Text('All'),
-                            value: null,
-                            groupValue: tempCategory,
-                            onChanged: (value) {
-                              setModalState(() => tempCategory = value);
-                            },
-                          ),
-                          ..._categories?.map(
-                            (category) => RadioListTile<String>(
-                              title: Text(category),
-                              value: category,
-                              groupValue: tempCategory,
-                              onChanged: (value) {
-                                setModalState(() => tempCategory = value);
-                              },
-                            ),
-                          ) ?? [],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                side: BorderSide(color: Theme.of(context).colorScheme.primary),
-                              ),
-                            ),
-                            child: Text(
-                              'Cancel',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                _selectedCategory = tempCategory;
-                                if (_tabController.index == 0) {
-                                  _searchFood(_searchController.text, tempCategory ?? "", _currentMinPrice, _currentMaxPrice, _favoritedItems);
-                                } else {
-                                  _searchRestaurant(_searchController.text, tempCategory ?? "");
-                                }
-                              });
-                              Navigator.pop(context);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text(
-                              'Apply',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
         );
       },
     );
@@ -576,26 +499,129 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Welcome to GolekMakanRek!',
+                          'Selamat Datang!',
                           style: TextStyle(
                             fontSize: 24.0,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Wrap(
-                          spacing: 8.0,
-                          runSpacing: 8.0,
+                        Row(
                           children: [
-                            _buildCategoryButton('Pizza', Icons.local_pizza),
-                            _buildCategoryButton('Burger', Icons.fastfood),
-                            _buildCategoryButton('Sushi', Icons.rice_bowl),
-                            _buildCategoryButton('Salad', Icons.emoji_food_beverage),
-                            _buildCategoryButton('Dessert', Icons.cake),
-                            _buildCategoryButton('Drinks', Icons.local_drink),
-                            _buildCategoryButton('Pasta', Icons.restaurant),
-                            _buildCategoryButton('Seafood', Icons.set_meal),
+                            Expanded(
+                              child: Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    children: [
+                                      const Icon(Icons.restaurant_menu, size: 32),
+                                      const SizedBox(height: 8),
+                                      FutureBuilder(
+                                        future: _foodFuture,
+                                        builder: (context, snapshot) {
+                                          return Text(
+                                            _totalFoods.toString(),
+                                            style: const TextStyle(
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      const Text('Makanan & Minuman'),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    children: [
+                                      const Icon(Icons.store, size: 32),
+                                      const SizedBox(height: 8),
+                                      FutureBuilder(
+                                        future: _restaurantFuture,
+                                        builder: (context, snapshot) {
+                                          return Text(
+                                            _totalRestaurants.toString(),
+                                            style: const TextStyle(
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      const Text('Restoran'),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
+                        ),
+                        const SizedBox(height: 24),
+                        // Featured section
+                        const Text(
+                          'Banting Harga!',
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        FutureBuilder(
+                          future: _foodFuture,
+                          builder: (context, AsyncSnapshot<List<Food>> snapshot) {
+                            if (!snapshot.hasData) {
+                              return const Center(child: CircularProgressIndicator());
+                            }
+                            
+                            // Get all items with discount, sort by discount percentage, take top 3
+                            var featuredItems = snapshot.data!
+                                .where((item) => item.fields.diskon > 0)
+                                .toList()
+                              ..sort((a, b) => b.fields.diskon.compareTo(a.fields.diskon));
+                            featuredItems = featuredItems.take(3).toList();
+
+                            if (featuredItems.isEmpty) {
+                              return const Card(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Text(
+                                    'Belum ada diskon untuk saat ini.',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            
+                            return Column(
+                              children: featuredItems.map((food) => Card(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                child: ListTile(
+                                  title: Text(
+                                    food.fields.nama,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  subtitle: Text('Diskon ${food.fields.diskon}%!'),
+                                  trailing: Text(
+                                    formatPrice((food.fields.harga * (1 - food.fields.diskon / 100)).toInt()),
+                                    style: const TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              )).toList(),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -631,58 +657,6 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                   dividerColor: Colors.grey[100],
                   indicatorSize: TabBarIndicatorSize.tab,
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Wrap(
-                    spacing: 8,
-                    children: [
-                      FilterChip(
-                        label: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.category, size: 16),
-                            const SizedBox(width: 4),
-                            Text(_selectedCategory ?? 'All Categories'),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.arrow_drop_down, size: 16),
-                          ],
-                        ),
-                        selected: _selectedCategory != null,
-                        onSelected: (_) => _showCategoryModal(),
-                        shape: StadiumBorder(
-                          side: BorderSide(
-                            color: _selectedCategory != null ? Theme.of(context).primaryColor : Colors.grey,
-                          ),
-                        ),
-                      ),
-                      if (_tabController.index == 0 && loggedIn)
-                        FilterChip(
-                          label: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.star, size: 16, color: Colors.amber),
-                              SizedBox(width: 4),
-                              Text('Favorites'),
-                            ],
-                          ),
-                          selected: _favoritedItems,
-                          onSelected: (bool selected) {
-                            setState(() {
-                              _favoritedItems = selected;
-                              if (_tabController.index == 0) {
-                                _searchFood(_searchController.text, _selectedCategory ?? "", _currentMinPrice, _currentMaxPrice, _favoritedItems);
-                              }
-                            });
-                          },
-                          shape: StadiumBorder(
-                            side: BorderSide(
-                              color: _favoritedItems ? Theme.of(context).primaryColor : Colors.grey,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
               ),
               pinned: true,
             ),
@@ -700,6 +674,13 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   }
 
   Widget _buildFoodList() {
+    if (_isListLoading) {
+      return Container(
+        height: double.infinity,
+        alignment: Alignment.center,
+        child: const CircularProgressIndicator(),
+      );
+    }
     return FutureBuilder(
       future: _foodFuture,
       builder: (context, AsyncSnapshot<List<Food>> snapshot) {
@@ -769,6 +750,9 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                       style: const TextStyle(
                                         color: Colors.red,
                                         decoration: TextDecoration.lineThrough,
+                                        decorationColor: Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
                                       ),
                                     ),
                                     const SizedBox(width: 8),
@@ -776,6 +760,8 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                       formatPrice((snapshot.data![index].fields.harga * (1 - snapshot.data![index].fields.diskon / 100)).toInt()),
                                       style: const TextStyle(
                                         color: Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
                                       ),
                                     ),
                                     const SizedBox(width: 8),
@@ -794,7 +780,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                       ),
                                     ),
                                   ] else ...[
-                                    Text(formatPrice(snapshot.data![index].fields.harga)),
+                                    Text(formatPrice(snapshot.data![index].fields.harga), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                                   ],
                                 ],
                               ),
@@ -850,6 +836,13 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   }
 
   Widget _buildRestaurantList() {
+    if (_isListLoading) {
+      return Container(
+        height: double.infinity,
+        alignment: Alignment.center,
+        child: const CircularProgressIndicator(),
+      );
+    }
     return FutureBuilder(
       future: _restaurantFuture,
       builder: (context, AsyncSnapshot<List<Restaurant>> snapshot) {
@@ -920,41 +913,17 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
       },
     );
   }
-
-  Widget _buildCategoryButton(String category, IconData icon) {
-    return ElevatedButton.icon(
-      onPressed: () {
-        setState(() {
-          _selectedCategory = category;
-          if (_tabController.index == 0) {
-            _searchFood(_searchController.text, category, _currentMinPrice, _currentMaxPrice, _favoritedItems);
-          } else {
-            _searchRestaurant(_searchController.text, category);
-          }
-        });
-      },
-      icon: Icon(icon),
-      label: Text(category),
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-    );
-  }
 }
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate(this._tabBar, this._chips);
+  _SliverAppBarDelegate(this._tabBar);
 
   final TabBar _tabBar;
-  final Widget _chips;
 
   @override
-  double get minExtent => _tabBar.preferredSize.height + 56; // Add height for chips
+  double get minExtent => _tabBar.preferredSize.height;
   @override
-  double get maxExtent => _tabBar.preferredSize.height + 56;
+  double get maxExtent => _tabBar.preferredSize.height;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -968,12 +937,7 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
         ),
         color: Colors.white,
       ),
-      child: Column(
-        children: [
-          _tabBar,
-          _chips,
-        ],
-      ),
+      child: _tabBar,
     );
   }
 
