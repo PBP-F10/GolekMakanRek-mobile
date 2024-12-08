@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,7 +27,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   final TextEditingController _minPriceController = TextEditingController();
   final TextEditingController _maxPriceController = TextEditingController();
   double _currentMinPrice = 0;
-  double _currentMaxPrice = 100000;
+  double _currentMaxPrice = 0;
   double _minPrice = 0;
   double _maxPrice = 0;
   List<String>? _categories;
@@ -218,7 +219,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                             values: RangeValues(_currentMinPrice, _currentMaxPrice),
                             min: _minPrice,
                             max: _maxPrice,
-                            divisions: ((_maxPrice - _minPrice) / 1000).round(),
+                            divisions: max(((_maxPrice - _minPrice) / 1000).round(), 1),
                             labels: RangeLabels(
                               _currentMinPrice.round().toString(),
                               _currentMaxPrice.round().toString(),
@@ -289,7 +290,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                   onSubmitted: (value) {
                                     setState(() {
-                                      _currentMaxPrice = double.tryParse(value) ?? 100000;
+                                      _currentMaxPrice = double.tryParse(value) ?? _maxPrice;
                                     });
                                   },
                                 ),
@@ -307,16 +308,24 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                           ),
                         ),
                         const SizedBox(height: 10),
-                        DropdownButton<String>(
-                          value: _selectedCategory,
-                          hint: const Text('Select a category'),
-                          items: _categories?.map((String category) {
-                            return DropdownMenuItem<String>(
-                              value: category,
-                              child: Text(category),
-                            );
-                          }).toList(),
-                          onChanged: (String? newValue) {
+                        DropdownMenu<String>(
+                          initialSelection: _selectedCategory,
+                          hintText: 'Select a category',
+                          menuHeight: MediaQuery.of(context).size.height * 0.3,
+                          enableFilter: true,
+                          dropdownMenuEntries: [
+                            const DropdownMenuEntry<String>(
+                              value: "",
+                              label: 'All',
+                            ),
+                            ..._categories!.map(
+                              (category) => DropdownMenuEntry<String>(
+                                value: category,
+                                label: category,
+                              ),
+                            ),
+                          ],
+                          onSelected: (String? newValue) {
                             setState(() {
                               _selectedCategory = newValue;
                             });
@@ -646,7 +655,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                           ),
                         ),
                       ),
-                      if (loggedIn)
+                      if (_tabController.index == 0 && loggedIn)
                         FilterChip(
                           label: const Row(
                             mainAxisSize: MainAxisSize.min,
