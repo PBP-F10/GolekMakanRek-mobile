@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:golekmakanrek_mobile/homepage/models/food.dart';
 import 'package:golekmakanrek_mobile/homepage/models/restaurant.dart';
 import 'package:golekmakanrek_mobile/homepage/widgets/left_drawer.dart';
+import 'package:golekmakanrek_mobile/userprofile/screens/user_profile_page.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -41,11 +42,51 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   String? _selectedCategory;
   bool _isFilterLoading = true;
   bool _isListLoading = false;
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    switch (index) {
+      case 0:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ItemList()),
+        );
+        break;
+      case 1:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ItemList()),
+        );
+        break;
+      case 2:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ItemList()),
+        );
+        break;
+      case 3:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ItemList()),
+        );
+        break;
+      case 4:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const UserProfilePage()),
+        );
+        break;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    loggedIn = context.read<CookieRequest>().loggedIn;
     _foodFuture = fetchFood(context.read<CookieRequest>());
     _restaurantFuture = fetchRestaurant(context.read<CookieRequest>());
     fetchFilterData(context.read<CookieRequest>()).then((_) {
@@ -56,10 +97,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   }
 
   Future<List<Food>> fetchFood(CookieRequest request) async {
-    var response = await request.login('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/auth/login/', {'username': 'root', 'password': 'pbp-f10golekmakanrek'});
-    loggedIn = request.loggedIn;
-
-    response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/get_food/');
+    var response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/get_food/');
 
     // Melakukan decode response menjadi bentuk json
     var data = response;
@@ -204,6 +242,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   }
 
   void _showFilterSheet(double initialSize, double tempMinPrice, double tempMaxPrice, String? tempCategory, bool tempFavorited) {
+    final ScrollController modalScrollController = ScrollController();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -216,12 +255,13 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
               initialChildSize: initialSize,
               minChildSize: 0.4,
               maxChildSize: 0.9,
-              builder: (BuildContext context, ScrollController scrollController) {
+              builder: (BuildContext context, ScrollController _) { // Ignore the provided controller
                 return Container(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: SingleChildScrollView(
-                    controller: scrollController,
+                    controller: modalScrollController, // Use our custom controller
                     child: Column(
+                      // ...existing code...
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -444,7 +484,10 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
           },
         );
       },
-    );
+    ).whenComplete(() {
+      // Dispose the controller when the bottom sheet is closed
+      modalScrollController.dispose();
+    });
   }
 
   String formatPrice(int price) {
@@ -672,6 +715,35 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
             _buildRestaurantList(),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorites',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Notifications',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Colors.grey,
+        showUnselectedLabels: true,
+        onTap: _onItemTapped,
       ),
     );
   }

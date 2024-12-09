@@ -43,7 +43,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Future<UserProfile> fetchUserProfile(CookieRequest request) async {
-    final response = await request.get('http://127.0.0.1:8000/userprofile/userprofile/get');
+    final response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/userprofile/userprofile/get');
 
     var data = response;
 

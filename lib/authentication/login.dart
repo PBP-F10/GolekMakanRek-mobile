@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-
+import 'package:golekmakanrek_mobile/homepage/screens/item_list.dart';
 import '../home/home.dart';
 import 'register.dart';
 
@@ -101,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                             String password = _passwordController.text;
         
                             final response = await request.login(
-                                "http://127.0.0.1:8000/login-external/",
+                                "https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/auth/login/",
                                 {
                                   'username': username,
                                   'password': password,
@@ -114,7 +114,7 @@ class _LoginPageState extends State<LoginPage> {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => const HomePage()),
+                                      builder: (context) => const ItemList()),
                                 );
                                 ScaffoldMessenger.of(context)
                                   ..hideCurrentSnackBar()
