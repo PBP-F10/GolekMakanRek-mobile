@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'package:golekmakanrek_mobile/screens/login.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+
+import 'screens/authentication/login.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -18,13 +20,8 @@ class MyApp extends StatelessWidget {
         return request;
       },
       child: MaterialApp(
-        title: 'Golek Makan Rek',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color.fromARGB(255, 255, 179, 0),
-          ).copyWith(secondary: const Color(0xFFFFFFFF)), 
-        ),
+        title: 'GolekMakanRek!',
+        theme: ThemeData(),
         home: const LoginPage(),
       ),
     );

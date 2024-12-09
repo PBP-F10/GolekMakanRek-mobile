@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:golekmakanrek_mobile/models/food.dart';
+import 'package:golekmakanrek_mobile/models/food_review/food.dart';
 import 'package:golekmakanrek_mobile/widgets/left_drawer.dart';
+import 'package:golekmakanrek_mobile/screens/food_review/food_rating.dart';
+import 'package:golekmakanrek_mobile/screens/food_review/food_comment.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
@@ -150,6 +152,39 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
                                 fontSize: 14,
                                 color: Colors.grey,
                               ),
+                            ),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.star_border, color: Colors.amber),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FoodRatingPage(
+                                      foodId: snapshot.data![index].pk,
+                                      foodName: food.nama,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.comment, color: Colors.blue),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FoodCommentsPage(
+                                      foodId: snapshot.data![index].pk,
+                                      foodName: food.nama,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
