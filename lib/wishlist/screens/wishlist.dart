@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:golekmakanrek_mobile/widgets/left_drawer.dart';
 import 'package:golekmakanrek_mobile/wishlist/models/food.dart';
-import 'package:golekmakanrek_mobile/login.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'package:golekmakanrek_mobile/wishlist/models/item.dart';
 
 
 class WishlistPage extends StatefulWidget {
@@ -14,9 +13,9 @@ class WishlistPage extends StatefulWidget {
 }
 
 class _WishlistPageState extends State<WishlistPage> {
-  Future<List<Wishlist>> fetchWishlist(CookieRequest request) async {
-    final responsewishlist = await request.get('http://127.0.0.1:8000/json/');
-    final responsefood = await request.get('http://127.0.0.1:8000/food-json/');
+  Future<List<Food>> fetchWishlist(CookieRequest request) async {
+    final responsewishlist = await request.get('http://127.0.0.1:8000/food_review/wishlist/status/');
+    final responsefood = await request.get('http://127.0.0.1:8000/get_food/');
     var datawishlist = responsewishlist;
     var datafood = responsefood;
     
@@ -27,13 +26,11 @@ class _WishlistPageState extends State<WishlistPage> {
       }
     }
 
-    List<Wishlist> listWishlist = [];
-    for (var d in datawishlist) {
+    List<Food> listWishlist = [];
+    for (var d in datawishlist["wishlisted_items"]) {
       for (var food in listFood) {
-        var wishlist = Wishlist.fromJson(d);
-        if (d != null && food.pk == wishlist.fields.item) {
-          wishlist.fields.food = food;
-          listWishlist.add(wishlist);
+        if (d != null && food.pk == d) {
+          listWishlist.add(food);
         }
       }
     }
@@ -48,35 +45,7 @@ class _WishlistPageState extends State<WishlistPage> {
       appBar: AppBar(
         title: const Text('Wishlist List'),
       ),
-      bottomNavigationBar: ElevatedButton(
-        onPressed: () async {
-          final response = await request.logout(
-              "http://127.0.0.1:8000/auth/logout/");
-          String message = response["message"];
-          if (context.mounted) {
-              if (response['status']) {
-                  String uname = response["username"];
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text("$message Sampai jumpa, $uname."),
-                  ));
-                  Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginPage()),
-                  );
-              } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text(message),
-                      ),
-                  );
-              }
-          }
-        }, 
-        child: const Text(
-            "Save",
-            style: TextStyle(color: Colors.white),
-          ),
-      ),
+      drawer: const LeftDrawer(),
       body: FutureBuilder(
         future: fetchWishlist(request),
         builder: (context, AsyncSnapshot snapshot) {
@@ -127,7 +96,7 @@ class _WishlistPageState extends State<WishlistPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          snapshot.data![index].fields.food.fields.nama,
+                          snapshot.data![index].fields.nama,
                           style: TextStyle(
                             color: Colors.orange[800],
                             fontSize: 18.0,
@@ -148,7 +117,7 @@ class _WishlistPageState extends State<WishlistPage> {
 }
 
 class WishlistDetailPage extends StatelessWidget {
-  final Wishlist wishlist;
+  final Food wishlist;
 
   const WishlistDetailPage({super.key, required this.wishlist});
 
@@ -156,30 +125,42 @@ class WishlistDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(wishlist.fields.food.fields.nama),
+        title: Text(wishlist.fields.nama),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              wishlist.fields.food.fields.nama,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              "Rp${wishlist.fields.food.fields.harga}",
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "Description:",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(wishlist.fields.food.fields.deskripsi),
-          ],
+      body: Center(
+        child: Container(
+          width: 1000,
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 1,
+                blurRadius: 4,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                wishlist.fields.nama,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.orange[800],),
+              ),
+              const SizedBox(height: 16),
+              Text(wishlist.fields.deskripsi),
+              const SizedBox(height: 16),
+              Text(
+                "Rp${wishlist.fields.harga}",
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold,),
+              ),
+            ],
+          ),
         ),
       ),
     );
