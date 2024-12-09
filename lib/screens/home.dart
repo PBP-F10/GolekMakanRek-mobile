@@ -14,17 +14,21 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Golek Makan Rek'),
+      ),
       drawer: const LeftDrawer(),
       body: Center(
         child: CupertinoButton(
           color: Colors.grey,
-          child: const Text("User Profile"), 
+          child: const Text("user profile"), 
           onPressed: () {
             Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const UserProfilePage()),
-              );
+              context,
+              MaterialPageRoute(
+                builder: (context) => const UserProfilePage()
+              ),
+            );
           }
         ),
       ),
