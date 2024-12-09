@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -38,8 +39,8 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   Future<List<Restaurant>>? _restaurantFuture;
   final NumberFormat _currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
   String? _selectedCategory;
-  bool _isFilterLoading = true; // Add this line
-  bool _isListLoading = false;  // Add this line
+  bool _isFilterLoading = true;
+  bool _isListLoading = false;
 
   @override
   void initState() {
@@ -153,12 +154,14 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
     return listResto;
   }
 
-  void updateLikes(String idMakanan) async {
+  Future<bool> updateLikes(String idMakanan) async {
     final request = context.read<CookieRequest>();
-    await request.post('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/toggle_like/', {
-      'food_id': idMakanan,
-    });
-    return;
+    final response = await request.post('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/toggle_like_json/', 
+      jsonEncode(<String, String>{
+          'food_id': idMakanan,
+        }),
+    );
+    return response['status'] == 'success';
   }
 
   Future<void> fetchFilterData(CookieRequest request) async {
@@ -796,7 +799,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                 _starredItems.contains(snapshot.data![index].pk) ? Icons.star : Icons.star_border,
                                 color: _starredItems.contains(snapshot.data![index].pk) ? const Color.fromARGB(255, 245, 158, 11) : null,
                               ),
-                              onPressed: () {
+                              onPressed: () async {
                                 if (!loggedIn) {
                                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -806,17 +809,19 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                   );
                                 }
                                 else {
-                                  // updateLikes(snapshot.data![index].pk);
-                                  setState(() {
-                                    if (_starredItems.contains(snapshot.data![index].pk)) {
-                                      _starredItems.remove(snapshot.data![index].pk);
-                                    } else {
-                                      _starredItems.add(snapshot.data![index].pk);
-                                    }
-                                    _starCounts[snapshot.data![index].pk] = _starredItems.contains(snapshot.data![index].pk)
-                                        ? (_starCounts[snapshot.data![index].pk] ?? 0) + 1
-                                        : (_starCounts[snapshot.data![index].pk] ?? 1) - 1;
-                                  });
+                                  bool status = await updateLikes(snapshot.data![index].pk);
+                                  if (status) {
+                                    setState(() {
+                                      if (_starredItems.contains(snapshot.data![index].pk)) {
+                                        _starredItems.remove(snapshot.data![index].pk);
+                                      } else {
+                                        _starredItems.add(snapshot.data![index].pk);
+                                      }
+                                      _starCounts[snapshot.data![index].pk] = _starredItems.contains(snapshot.data![index].pk)
+                                          ? (_starCounts[snapshot.data![index].pk] ?? 0) + 1
+                                          : (_starCounts[snapshot.data![index].pk] ?? 1) - 1;
+                                    });
+                                  }
                                 }
                               },
                             ),

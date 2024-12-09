@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
-import 'package:golekmakanrek_mobile/homepage/screens/food_list.dart';
+import 'package:golekmakanrek_mobile/homepage/screens/item_list.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() {
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.deepOrange,
           ).copyWith(secondary: Colors.deepOrange[400]),
         ),
-        home: const FoodPage(),
+        home: const ItemList(),
         debugShowCheckedModeBanner: false,
       ),
     );
