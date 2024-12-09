@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
-import 'package:golekmakanrek_mobile/homepage/screens/item_list.dart';
-import 'package:google_fonts/google_fonts.dart';
+
+import 'authentication/login.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -19,15 +20,14 @@ class MyApp extends StatelessWidget {
         return request;
       },
       child: MaterialApp(
-        title: 'GolekMakanRek',
+        title: 'GolekMakanRek!',
         theme: ThemeData(
           useMaterial3: true,
-          textTheme: GoogleFonts.interTextTheme(),
           colorScheme: ColorScheme.fromSwatch(
             primarySwatch: Colors.deepOrange,
           ).copyWith(secondary: Colors.deepOrange[400]),
         ),
-        home: const ItemList(),
+        home: const LoginPage(),
         debugShowCheckedModeBanner: false,
       ),
     );
