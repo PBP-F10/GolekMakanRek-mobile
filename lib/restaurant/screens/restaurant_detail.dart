@@ -11,7 +11,6 @@ class RestaurantDetailPage extends StatefulWidget {
 }
 
 class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
-
   double? _userRating; // Variabel untuk menyimpan penilaian pengguna
 
   // Fungsi untuk menampilkan pop-up untuk menambah rating
@@ -37,26 +36,13 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
               onPressed: () {
                 Navigator.pop(context); // Tutup dialog
               },
-              style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFF28A745), // Warna latar tombol
-                foregroundColor: Colors.white, // Warna teks
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
             ),
-            
             TextButton(
               onPressed: () {
                 final newRating = double.tryParse(_dialogRatingController.text);
                 if (newRating != null && newRating >= 1.0 && newRating <= 5.0) {
                   setState(() {
-                    widget.restaurant.addRating(newRating);
-                    _userRating = newRating; 
+                    _userRating = newRating;
                   });
                   Navigator.pop(context); 
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -68,6 +54,17 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                   );
                 }
               },
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFF28A745), // Warna latar tombol
+                foregroundColor: Colors.white, // Warna teks
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
               child: const Text("OK"),
             ),
           ],
@@ -80,7 +77,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.restaurant.name),
+        title: Text("Detail Restoran"),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Center(
@@ -88,52 +85,45 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
           padding: const EdgeInsets.all(16.0),
           child: SingleChildScrollView(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // Menampilkan Nama Restoran
                 Text(
-                  widget.restaurant.name,
+                  widget.restaurant.fields.nama,
                   style: const TextStyle(
+                    color: Colors.black,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
+                // Menampilkan Deskripsi Restoran
                 Text(
-                  widget.restaurant.description,
+                  widget.restaurant.fields.deskripsi,
                   style: const TextStyle(fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
-                Text(
+                // Menampilkan Kategori Restoran
+                const Text(
                   "Kategori: ",
-                  style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF28A745)),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF28A745),
+                  ),
                 ),
                 Text(
-                  widget.restaurant.category,
+                  widget.restaurant.fields.kategori,
                   style: const TextStyle(fontSize: 16, color: Colors.black),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  "Rating: ",
-                  style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF28A745)),
-                ),
-                Text(
-                  widget.restaurant.rating.toStringAsFixed(1),
-                  style: const TextStyle(fontSize: 16, color: Colors.black),
-                ),
-                const SizedBox(height: 16),
+                // Tombol untuk memberikan rating
                 TextButton(
                   onPressed: _showRatingDialog,
                   style: TextButton.styleFrom(
-                    backgroundColor: const Color(0xFF28A745), // Warna latar tombol
-                    foregroundColor: Colors.white, // Warna teks
+                    backgroundColor: const Color(0xFF28A745),
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
@@ -145,6 +135,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                   child: const Text('Berikan Rating'),
                 ),
                 const SizedBox(height: 16),
+                // Menampilkan rating yang sudah diberikan
                 if (_userRating != null) ...[
                   const Text(
                     "Penilaianmu: ",
@@ -157,10 +148,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                   const SizedBox(height: 8),
                   Text(
                     _userRating!.toStringAsFixed(1),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
+                    style: const TextStyle(fontSize: 16, color: Colors.black),
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -172,18 +160,10 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                       color: Color(0xFF28A745)),
                 ),
                 const SizedBox(height: 8),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: widget.restaurant.foodItems.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Text(
-                        widget.restaurant.foodItems[index],
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                  },
+                // Menambahkan informasi makanan atau menu lainnya
+                Text(
+                  'Menu makanan belum ditambahkan.',
+                  style: const TextStyle(fontSize: 16),
                 ),
               ],
             ),

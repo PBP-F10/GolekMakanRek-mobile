@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:golekmakanrek_mobile/restaurant/screens/menu.dart';
 import 'package:golekmakanrek_mobile/restaurant/screens/restaurant_list.dart';
 
-
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
 
@@ -58,7 +57,7 @@ class LeftDrawer extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RestaurantListPage(),
+                  builder: (context) => RestaurantList(),
                 ),
               );
             },
