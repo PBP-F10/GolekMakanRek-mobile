@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'package:golekmakanrek_mobile/homepage/screens/item_list.dart';
-import '../home/home.dart';
+import 'package:golekmakanrek_mobile/homepage/screens/main_screen.dart';
 import 'register.dart';
 
 class LoginPage extends StatefulWidget {
@@ -114,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => const ItemList()),
+                                      builder: (context) => const MainScreen()),
                                 );
                                 ScaffoldMessenger.of(context)
                                   ..hideCurrentSnackBar()
