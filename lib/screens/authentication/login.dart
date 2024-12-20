@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:golekmakanrek_mobile/screens/homepage/item_list.dart';
 import 'package:provider/provider.dart';
-
-import '../home.dart';
 import 'register.dart';
 
 class LoginPage extends StatefulWidget {

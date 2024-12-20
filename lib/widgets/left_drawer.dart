@@ -34,7 +34,6 @@ class LeftDrawer extends StatelessWidget {
               ],
             ),
           ),
-          // Always show Food List and About
           ListTile(
             leading: const Icon(Icons.home),
             title: const Text('Home'),
@@ -52,8 +51,13 @@ class LeftDrawer extends StatelessWidget {
               // Add your about page navigation here
             },
           ),
-          // Conditional menu items based on login status
           if (!request.loggedIn) ...[
+            const Divider(
+              color: Color(0xFF2C5F2D),
+              thickness: 1,
+              indent: 16,
+              endIndent: 16,
+            ),
             ListTile(
               leading: const Icon(Icons.login),
               title: const Text('Login'),
@@ -66,6 +70,30 @@ class LeftDrawer extends StatelessWidget {
             ),
           ] else ...[
             ListTile(
+              leading: const Icon(Icons.fastfood_outlined),
+              title: const Text('Restaurant List'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  // todo: integrate with resto preview
+                  MaterialPageRoute(builder: (context) => const RestaurantListPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.forum_outlined),
+              title: const Text('Forum'),
+              onTap: () {
+                // todo: forum app
+              },
+            ),
+            const Divider(
+              color: Color(0xFF2C5F2D),
+              thickness: 1,
+              indent: 16,
+              endIndent: 16,
+            ),
+            ListTile(
               leading: const Icon(Icons.person_outlined),
               title: const Text('User Profile'),
               onTap: () {
@@ -76,23 +104,10 @@ class LeftDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.fastfood_outlined),
-              title: const Text('Restaurant List'),
+              leading: const Icon(Icons.list),
+              title: const Text('Wishlist'),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const RestaurantListPage()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.forum_outlined),
-              title: const Text('Forum'),
-              onTap: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => const UserProfilePage()),
-                // );
+                // todo: wishlist
               },
             ),
             ListTile(

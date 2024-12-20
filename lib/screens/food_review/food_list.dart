@@ -22,6 +22,32 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
   final TextEditingController _commentController = TextEditingController();
   int _currentRating = 0;
   Map<String, double> _foodRatings = {};
+  Map<String, String> _userRatingIds = {};
+  List<Welcome> _foods = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    final request = context.read<CookieRequest>();
+    await _updateFoodRatings();
+    _foods = await fetchFoods(request);
+    for (var food in _foods) {
+      await _checkUserRating(food.pk);
+    }
+    
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
   Future<List<Welcome>> fetchFoods(CookieRequest request) async {
     try {
@@ -64,6 +90,85 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
     }
   }
 
+  Future<void> _deleteRating(String ratingId, String foodId) async {
+    final request = context.read<CookieRequest>();
+    try {
+      final response = await request.post(
+        'http://127.0.0.1:8000/food_review/delete-rating/$ratingId/',
+        {}
+      );
+
+      if (response['status'] == 'success') {
+        setState(() {
+          _userRatingIds.remove(foodId);
+        });
+        await _updateFoodRatings();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Rating deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _updateFoodRatings() async {
+    final request = context.read<CookieRequest>();
+    final ratingsResponse = await request.get('http://127.0.0.1:8000/food_review/foodrating_json/');
+    
+    List<dynamic> ratingsData = ratingsResponse is List ? ratingsResponse : json.decode(ratingsResponse);
+    Map<String, List<int>> foodRatings = {};
+    
+    for (var rating in ratingsData) {
+      String foodId = rating['fields']['deskripsi_food'];
+      int score = rating['fields']['score'];
+      if (!foodRatings.containsKey(foodId)) {
+        foodRatings[foodId] = [];
+      }
+      foodRatings[foodId]!.add(score);
+    }
+
+    setState(() {
+      _foodRatings.clear();
+      foodRatings.forEach((foodId, scores) {
+        if (scores.isNotEmpty) {
+          double average = scores.reduce((a, b) => a + b) / scores.length;
+          _foodRatings[foodId] = average;
+        }
+      });
+    });
+  }
+
+  Future<void> _checkUserRating(String foodId) async {
+    final request = context.read<CookieRequest>();
+    try {
+      final response = await request.get(
+        'http://127.0.0.1:8000/food_review/get-user-rating/$foodId/'
+      );
+
+      if (response['has_rating']) {
+        setState(() {
+          _userRatingIds[foodId] = response['rating_id'].toString();
+        });
+      } else {
+        setState(() {
+          _userRatingIds.remove(foodId);
+        });
+      }
+    } catch (e) {
+      print('Error checking user rating: $e');
+    }
+  }
+
   Future<void> _showRatingDialog(BuildContext context, String foodId, String foodName) async {
     bool hasExistingRating = false;
     int initialRating = 0;
@@ -71,7 +176,6 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
 
     final request = context.read<CookieRequest>();
     
-    // Fetch existing rating
     try {
       final response = await request.get(
         'http://127.0.0.1:8000/food_review/get-user-rating/$foodId/'
@@ -81,12 +185,15 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
         hasExistingRating = true;
         initialRating = response['rating'];
         existingRatingId = response['rating_id'].toString();
+        setState(() {
+          _currentRating = initialRating;
+          _userRatingIds[foodId] = existingRatingId!;
+        });
       }
     } catch (e) {
       print('Error fetching rating: $e');
     }
 
-    // Show rating dialog
     return showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -136,10 +243,10 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
                   );
 
                   if (response['status'] == 'success') {
-                    setState(() {
-                      _foodRatings[foodId] = response['food_rating'].toDouble();
-                    });
                     Navigator.pop(context);
+                    await _updateFoodRatings();
+                    await _checkUserRating(foodId);
+                    
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(hasExistingRating 
@@ -166,21 +273,118 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
     );
   }
 
-  Widget _buildRatingDisplay(String foodId) {
-  return Row(
-    children: [
-      const Icon(Icons.star, color: Colors.amber, size: 16),
-      const SizedBox(width: 4),
-      Text(
-        _foodRatings[foodId]?.toStringAsFixed(1) ?? 'No ratings',
-        style: const TextStyle(
-          fontSize: 14,
-          color: Colors.grey,
+  Widget _buildRatingButtons(String foodId, String foodName) {
+    bool hasRating = _userRatingIds.containsKey(foodId);
+    
+    return Wrap(
+      alignment: WrapAlignment.end,
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        SizedBox(
+          height: 36,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              _showRatingDialog(
+                context,
+                foodId,
+                foodName,
+              );
+            },
+            icon: const Icon(
+              Icons.star_border,
+              color: Colors.amber,
+              size: 20,
+            ),
+            label: Text(
+              hasRating ? 'Update' : 'Rate',
+              style: const TextStyle(fontSize: 12),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.amber,
+              side: const BorderSide(
+                color: Colors.amber,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
         ),
-      ),
-    ],
-  );
-}
+        if (hasRating)
+          SizedBox(
+            height: 36,
+            child: OutlinedButton.icon(
+              onPressed: () => _deleteRating(_userRatingIds[foodId]!, foodId),
+              icon: const Icon(
+                Icons.delete_outline,
+                color: Colors.red,
+                size: 20,
+              ),
+              label: const Text(
+                'Delete',
+                style: TextStyle(fontSize: 12),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: const BorderSide(
+                  color: Colors.red,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+          ),
+        SizedBox(
+          height: 36,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              _showCommentsSheet(
+                context,
+                foodId,
+                foodName,
+              );
+            },
+            icon: const Icon(
+              Icons.chat_bubble_outline,
+              size: 20,
+            ),
+            label: const Text(
+              'Reviews',
+              style: TextStyle(fontSize: 12),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color.fromARGB(255, 115, 0, 255),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRatingDisplay(String foodId) {
+    return Row(
+      children: [
+        const Icon(Icons.star, color: Colors.amber, size: 16),
+        const SizedBox(width: 4),
+        Text(
+          _foodRatings[foodId]?.toStringAsFixed(1) ?? 'No ratings',
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    );
+  }
 
   void _showCommentsSheet(BuildContext context, String foodId, String foodName) {
     showModalBottomSheet(
@@ -339,7 +543,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
                           'http://127.0.0.1:8000/food_review/food/$foodId/comment/',
                           {
                             'comment': _commentController.text.trim()
-                          },  // Changed from jsonEncode to direct map
+                          },
                         );
 
                         if (response['status'] == 'success') {
@@ -360,7 +564,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
                       }
                     },
                     icon: const Icon(Icons.send),
-                    color: Colors.deepOrange[400],
+                    color: Colors.deepOrange[300],
                   ),
                 ],
               ),
@@ -373,10 +577,14 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final request = context.watch<CookieRequest>();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Daftar Makanan - ${widget.restaurantName}'),
+        title: Text(
+          'Daftar Makanan - ${widget.restaurantName}',
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
         centerTitle: true,
       ),
       drawer: const LeftDrawer(),
@@ -386,7 +594,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.blue.shade50,
+              color: Colors.deepOrange,
               borderRadius: const BorderRadius.vertical(
                 bottom: Radius.circular(20),
               ),
@@ -405,22 +613,17 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
                   'Menu List',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.black54,
+                    color: Colors.white,
                   ),
                 ),
               ],
             ),
           ),
           Expanded(
-            child: FutureBuilder(
-              future: fetchFoods(request),
-              builder: (context, AsyncSnapshot<List<Welcome>> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
+            child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _foods.isEmpty
+                ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -440,169 +643,116 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
                         ),
                       ],
                     ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: snapshot.data!.length,
-                  itemBuilder: (context, index) {
-                    var food = snapshot.data![index].fields;
-                    return Card(
-                      elevation: 4,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(12),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        food.nama,
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Category: ${food.kategori}',
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _foods.length,
+                    itemBuilder: (context, index) {
+                      var food = _foods[index].fields;
+                      var foodId = _foods[index].pk;
+                      
+                      return Card(
+                        elevation: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.orange[100],
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12),
                                 ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      NumberFormat.currency(
-                                        locale: 'id_ID',
-                                        symbol: 'Rp ',
-                                        decimalDigits: 0,
-                                      ).format(food.harga),
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                    if (food.diskon > 0)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.red,
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Text(
-                                          '${food.diskon}% OFF',
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          food.nama,
                                           style: const TextStyle(
-                                            color: Colors.white,
+                                            fontSize: 20,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                      ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  food.deskripsi,
-                                  style: TextStyle(
-                                    color: Colors.grey[700],
+                                        Text(
+                                          'Category: ${food.kategori}',
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                _buildRatingDisplay(snapshot.data![index].pk),
-                                const SizedBox(height: 16),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    OutlinedButton.icon(
-                                      onPressed: () {
-                                        _showRatingDialog(
-                                          context,
-                                          snapshot.data![index].pk,
-                                          food.nama,
-                                        );
-                                      },
-                                      icon: const Icon(
-                                        Icons.star_border,
-                                        color: Colors.amber,
-                                      ),
-                                      label: const Text('Rate'),
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: Colors.amber,
-                                        side: const BorderSide(
-                                          color: Colors.amber,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(20),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        NumberFormat.currency(
+                                          locale: 'id_ID',
+                                          symbol: 'Rp',
+                                          decimalDigits: 0,
+                                        ).format(food.harga),
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.deepPurple,
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    ElevatedButton.icon(
-                                      onPressed: () {
-                                        _showCommentsSheet(
-                                          context,
-                                          snapshot.data![index].pk,
-                                          food.nama,
-                                        );
-                                      },
-                                      icon: const Icon(Icons.chat_bubble_outline),
-                                      label: const Text('Reviews'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.blue,
-                                        foregroundColor: Colors.white,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(20),
+                                      if (food.diskon > 0)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            '${food.diskon}% OFF',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    food.deskripsi,
+                                    style: TextStyle(
+                                      color: Colors.grey[700],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _buildRatingDisplay(foodId),
+                                  const SizedBox(height: 16),
+                                  _buildRatingButtons(foodId, food.nama),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _commentController.dispose();
-    super.dispose();
   }
 }
