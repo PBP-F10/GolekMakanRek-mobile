@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:golekmakanrek_mobile/screens/home.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:golekmakanrek_mobile/screens/homepage/item_list.dart';
+import 'package:golekmakanrek_mobile/screens/authentication/login.dart';
+import 'package:golekmakanrek_mobile/screens/userprofile/user_profile_page.dart';
 import 'package:golekmakanrek_mobile/screens/food_review/restaurant_list.dart';
 
 class LeftDrawer extends StatelessWidget {
@@ -7,6 +11,8 @@ class LeftDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+    
     return Drawer(
       child: ListView(
         children: [
@@ -17,7 +23,7 @@ class LeftDrawer extends StatelessWidget {
             child: const Column(
               children: [
                 Text(
-                  'Mental Health Tracker',
+                  'GolekMakanRek',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 24,
@@ -25,42 +31,92 @@ class LeftDrawer extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                Padding(padding: EdgeInsets.all(8)),
-                Text(
-                  "Ayo jaga kesehatan mentalmu setiap hari disini!",
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
               ],
             ),
           ),
+          // Always show Food List and About
+          ListTile(
+            leading: const Icon(Icons.home),
+            title: const Text('Home'),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const ItemList()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.info),
+            title: const Text('About'),
+            onTap: () {
+              // Add your about page navigation here
+            },
+          ),
+          // Conditional menu items based on login status
+          if (!request.loggedIn) ...[
             ListTile(
-              leading: const Icon(Icons.home_outlined),
-              title: const Text('Halaman Utama'),
-              // Bagian redirection ke MyHomePage
+              leading: const Icon(Icons.login),
+              title: const Text('Login'),
               onTap: () {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomePage(),
-                    ));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                );
+              },
+            ),
+          ] else ...[
+            ListTile(
+              leading: const Icon(Icons.person_outlined),
+              title: const Text('User Profile'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const UserProfilePage()),
+                );
               },
             ),
             ListTile(
-              leading: const Icon(Icons.add_reaction_rounded),
-              title: const Text('Daftar Mood'),
+              leading: const Icon(Icons.fastfood_outlined),
+              title: const Text('Restaurant List'),
               onTap: () {
-                  // Route menu ke halaman mood
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const RestaurantListPage()),
-                  );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RestaurantListPage()),
+                );
               },
-          ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.forum_outlined),
+              title: const Text('Forum'),
+              onTap: () {
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) => const UserProfilePage()),
+                // );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () async {
+                final response = await request.logout(
+                    "http://127.0.0.1:8000/logout-external/");
+                if (response['status']) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Successfully logged out!"),
+                      ),
+                    );
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ItemList()),
+                    );
+                  }
+                }
+              },
+            ),
+          ],
         ],
       ),
     );
