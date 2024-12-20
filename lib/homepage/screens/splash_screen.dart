@@ -14,7 +14,7 @@ class SplashScreen extends StatelessWidget {
     return AnimatedSplashScreen(
       backgroundColor: Colors.white,
       splashIconSize: 250,
-      duration: 2500,
+      duration: 1300,
       splash: Image.asset(
         "assets/images/logo.png",
         fit: BoxFit.contain,
