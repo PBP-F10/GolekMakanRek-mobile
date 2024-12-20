@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:golekmakanrek_mobile/homepage/models/food.dart';
 import 'package:golekmakanrek_mobile/homepage/models/restaurant.dart';
-import 'package:golekmakanrek_mobile/homepage/widgets/left_drawer.dart';
-import 'package:golekmakanrek_mobile/userprofile/screens/user_profile_page.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -42,45 +40,6 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   String? _selectedCategory;
   bool _isFilterLoading = true;
   bool _isListLoading = false;
-  int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    switch (index) {
-      case 0:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ItemList()),
-        );
-        break;
-      case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ItemList()),
-        );
-        break;
-      case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ItemList()),
-        );
-        break;
-      case 3:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ItemList()),
-        );
-        break;
-      case 4:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const UserProfilePage()),
-        );
-        break;
-    }
-  }
 
   @override
   void initState() {
@@ -259,13 +218,12 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                 return Container(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: SingleChildScrollView(
-                    controller: modalScrollController, // Use our custom controller
+                    controller: modalScrollController,
                     child: Column(
-                      // ...existing code...
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Center( // Center the title
+                        const Center(
                           child: Text(
                             'Filter Options',
                             style: TextStyle(
@@ -298,7 +256,6 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                 tempMinPrice = (values.start / 1000).round() * 1000;
                                 tempMaxPrice = (values.end / 1000).round() * 1000;
                                 
-                                // Update the text controllers
                                 _minPriceController.text = tempMinPrice.toInt().toString();
                                 _maxPriceController.text = tempMaxPrice.toInt().toString();
                               });
@@ -503,7 +460,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
         title: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(32),
           ),
           child: TextField(
             controller: _searchController,
@@ -532,7 +489,6 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
           ),
         ],
       ),
-      drawer: const LeftDrawer(),
       body: NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
           return <Widget>[

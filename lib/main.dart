@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 
-import 'authentication/login.dart';
+import 'package:golekmakanrek_mobile/homepage/screens/splash_screen.dart';
+import 'homepage/screens/main_screen.dart';
+import 'package:golekmakanrek_mobile/authentication/login.dart';
 
 
 void main() {
@@ -27,8 +29,10 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.deepOrange,
           ).copyWith(secondary: Colors.deepOrange[400]),
         ),
-        home: const LoginPage(),
         debugShowCheckedModeBanner: false,
+        home: const SplashScreen(
+          nextScreen: LoginPage(),
+        ),
       ),
     );
   }

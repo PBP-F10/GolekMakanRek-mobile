@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:golekmakanrek_mobile/homepage/screens/item_list.dart';
 import 'package:golekmakanrek_mobile/userprofile/screens/user_profile_page.dart';
+import 'package:golekmakanrek_mobile/authentication/login.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

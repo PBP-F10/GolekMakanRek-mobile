@@ -295,7 +295,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ElevatedButton(
                 onPressed: () async {
                   final response = await request.logout(
-                    "http://127.0.0.1:8000/logout-external/");
+                    "https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/auth/logout/");
                     String message = response["message"];
                     if (context.mounted) {
                         if (response['status']) {
