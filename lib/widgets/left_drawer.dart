@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:golekmakanrek_mobile/screens/homepage/item_list.dart';
 import 'package:golekmakanrek_mobile/screens/authentication/login.dart';
 import 'package:golekmakanrek_mobile/screens/userprofile/user_profile_page.dart';
-import 'package:golekmakanrek_mobile/screens/food_review/restaurant_list.dart';
+import 'package:golekmakanrek_mobile/screens/resto_preview/restaurant_list.dart';
 import 'package:golekmakanrek_mobile/screens/wishlist/wishlist.dart';
 
 class LeftDrawer extends StatelessWidget {
@@ -77,7 +77,7 @@ class LeftDrawer extends StatelessWidget {
                 Navigator.push(
                   context,
                   // todo: integrate with resto preview
-                  MaterialPageRoute(builder: (context) => const RestaurantListPage()),
+                  MaterialPageRoute(builder: (context) => const RestaurantList()),
                 );
               },
             ),

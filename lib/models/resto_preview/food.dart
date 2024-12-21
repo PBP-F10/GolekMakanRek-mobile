@@ -2,18 +2,18 @@
 //
 //     final welcome = welcomeFromJson(jsonString);
 
-class Welcome {
+class Food {
     String model;
     String pk;
     Fields fields;
 
-    Welcome({
+    Food({
         required this.model,
         required this.pk,
         required this.fields,
     });
 
-    factory Welcome.fromJson(Map<String, dynamic> json) => Welcome(
+    factory Food.fromJson(Map<String, dynamic> json) => Food(
         model: json["model"],
         pk: json["pk"],
         fields: Fields.fromJson(json["fields"]),

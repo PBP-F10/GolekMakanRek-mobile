@@ -27,33 +27,37 @@ class Welcome {
 }
 
 class Fields {
-    int user;
-    String deskripsiFood;
-    int score;
-    String comment;
-    DateTime waktuComment;
+    String nama;
+    String kategori;
+    int harga;
+    int diskon;
+    String deskripsi;
+    String restoran;
 
     Fields({
-        required this.user,
-        required this.deskripsiFood,
-        required this.score,
-        required this.comment,
-        required this.waktuComment,
+        required this.nama,
+        required this.kategori,
+        required this.harga,
+        required this.diskon,
+        required this.deskripsi,
+        required this.restoran,
     });
 
     factory Fields.fromJson(Map<String, dynamic> json) => Fields(
-        user: json["user"],
-        deskripsiFood: json["deskripsi_food"],
-        score: json["score"],
-        comment: json["comment"],
-        waktuComment: DateTime.parse(json["waktu_comment"]),
+        nama: json["nama"],
+        kategori: json["kategori"],
+        harga: json["harga"],
+        diskon: json["diskon"],
+        deskripsi: json["deskripsi"],
+        restoran: json["restoran"],
     );
 
     Map<String, dynamic> toJson() => {
-        "user": user,
-        "deskripsi_food": deskripsiFood,
-        "score": score,
-        "comment": comment,
-        "waktu_comment": waktuComment.toIso8601String(),
+        "nama": nama,
+        "kategori": kategori,
+        "harga": harga,
+        "diskon": diskon,
+        "deskripsi": deskripsi,
+        "restoran": restoran,
     };
 }
