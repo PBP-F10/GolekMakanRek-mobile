@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:golekmakanrek_mobile/screens/home.dart';
-import 'package:golekmakanrek_mobile/screens/food_review/restaurant_list.dart';
 import 'package:golekmakanrek_mobile/screens/resto_preview/restaurant_list.dart';
 
 class LeftDrawer extends StatelessWidget {
@@ -49,17 +48,6 @@ class LeftDrawer extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => HomePage(),
                     ));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.add_reaction_rounded),
-              title: const Text('Daftar Mood'),
-              onTap: () {
-                  // Route menu ke halaman mood
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const RestaurantListPage()),
-                  );
               },
             ),
             ListTile(
