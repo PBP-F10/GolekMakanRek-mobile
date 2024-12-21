@@ -72,7 +72,7 @@ class LeftDrawer extends StatelessWidget {
           ] else ...[
             ListTile(
               leading: const Icon(Icons.fastfood_outlined),
-              title: const Text('Restaurant List'),
+              title: const Text('Restaurant'),
               onTap: () {
                 Navigator.push(
                   context,

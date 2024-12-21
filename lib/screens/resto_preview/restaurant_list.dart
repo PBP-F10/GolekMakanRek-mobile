@@ -3,6 +3,7 @@ import 'package:golekmakanrek_mobile/models/resto_preview/restaurant.dart';
 import 'package:golekmakanrek_mobile/screens/resto_preview/restaurant_detail.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:golekmakanrek_mobile/widgets/left_drawer.dart';
 
 class RestaurantList extends StatefulWidget {
   const RestaurantList({super.key});
@@ -24,7 +25,7 @@ class _RestaurantListState extends State<RestaurantList> with SingleTickerProvid
   }
 
   Future<List<Restaurant>> fetchRestaurant(CookieRequest request) async {
-    final response = await request.get('http://127.0.0.1:8000/get_restaurant/');
+    final response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/get_restaurant/');
     var data = response;
 
     List<Restaurant> listResto = [];
@@ -38,7 +39,7 @@ class _RestaurantListState extends State<RestaurantList> with SingleTickerProvid
 
   Future<void> _fetchFollowedRestaurants() async {
     final request = context.read<CookieRequest>();
-    final response = await request.get('http://127.0.0.1:8000/restaurant/status/');
+    final response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/restaurant/status/');
     final data = response;
 
     if (data['has_follow'] != null) {
@@ -66,9 +67,9 @@ class _RestaurantListState extends State<RestaurantList> with SingleTickerProvid
     });
 
     if (isFollowed) {
-      await request.post('http://127.0.0.1:8000/restaurant/unfollow/$restaurant/', {});
+      await request.post('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/restaurant/unfollow/$restaurant/', {});
     } else {
-      await request.post('http://127.0.0.1:8000/restaurant/follow/$restaurant/', {});
+      await request.post('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/restaurant/follow/$restaurant/', {});
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -95,6 +96,7 @@ class _RestaurantListState extends State<RestaurantList> with SingleTickerProvid
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
+      drawer: const LeftDrawer(),
       body: _buildRestaurantList(),
     );
   }
@@ -189,8 +191,8 @@ class _RestaurantListState extends State<RestaurantList> with SingleTickerProvid
                                           : const Color(0xFF28A745),
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
+                                        horizontal: 12,
+                                        vertical: 6,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(6),
@@ -198,7 +200,7 @@ class _RestaurantListState extends State<RestaurantList> with SingleTickerProvid
                                     ),
                                     child: Text(
                                       isFollowed ? 'Following' : 'Follow',
-                                      style: const TextStyle(fontSize: 16),
+                                      style: const TextStyle(fontSize: 14),
                                     ),
                                   ),
                                 ),
@@ -220,8 +222,8 @@ class _RestaurantListState extends State<RestaurantList> with SingleTickerProvid
                                       backgroundColor: const Color(0xFF28A745),
                                       foregroundColor: Colors.white,
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
+                                        horizontal: 12,
+                                        vertical: 6,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(6),
@@ -229,7 +231,7 @@ class _RestaurantListState extends State<RestaurantList> with SingleTickerProvid
                                     ),
                                     child: const Text(
                                       'Detail',
-                                      style: const TextStyle(fontSize: 16),
+                                      style: const TextStyle(fontSize: 14),
                                     ),
                                   ),
                                 ),

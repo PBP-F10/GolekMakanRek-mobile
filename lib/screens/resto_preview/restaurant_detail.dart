@@ -31,7 +31,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
 
   Future<void> _fetchRestaurantRating() async {
     final response = await http.get(
-      Uri.parse('http://127.0.0.1:8000/restaurant/get-restaurant-rating/${widget.restaurant.pk}/'),
+      Uri.parse('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/restaurant/get-restaurant-rating/${widget.restaurant.pk}/'),
     );
 
     if (response.statusCode == 200) {
@@ -48,7 +48,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
   Future<void> _fetchUserRating() async {
     final request = context.read<CookieRequest>();
     final response = await request.get(
-        'http://127.0.0.1:8000/restaurant/get-user-rating/${widget.restaurant.pk}/'
+        'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/restaurant/get-user-rating/${widget.restaurant.pk}/'
       );
       
       final data = response;
@@ -64,7 +64,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.post(
-        'http://127.0.0.1:8000/restaurant/${widget.restaurant.pk}/submit-rating/',
+        'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/restaurant/${widget.restaurant.pk}/submit-rating/',
         {
           'score': rating.toString(),
         }
@@ -101,7 +101,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
   }
 
   Future<List<Food>> fetchFoods() async {
-    final response = await http.get(Uri.parse('http://127.0.0.1:8000/main/food_json/'));
+    final response = await http.get(Uri.parse('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/main/food_json/'));
 
     if (response.statusCode == 200) {
       List<dynamic> data = json.decode(response.body);
@@ -210,7 +210,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                 const SizedBox(height: 16),
                 const Text(
                   "Kategori",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF28A745)),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color:  Colors.black),
                 ),
                 Text(
                   widget.restaurant.fields.kategori,
@@ -219,7 +219,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                 const SizedBox(height: 16),
                 const Text(
                   "Penilaian",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF28A745)),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color:  Colors.black),
                 ),
                 Text(
                   _averageRating.toStringAsFixed(1),
