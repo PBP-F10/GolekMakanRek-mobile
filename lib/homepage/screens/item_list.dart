@@ -496,25 +496,48 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
         backgroundColor: Theme.of(context).colorScheme.primary,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Container(
+          height: 40,
+          margin: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          child: TextField(
-            controller: _searchController,
-            decoration: const InputDecoration(
-              hintText: 'Cari...',
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16),
+          child: Center(
+            child: TextField(
+              controller: _searchController,
+              textAlignVertical: TextAlignVertical.center,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.grey,
+                  size: 20,
+                ),
+                hintText: 'Cari...',
+                hintStyle: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+              style: const TextStyle(fontSize: 14),
+              onSubmitted: (value) {
+                if (_tabController.index == 0) {
+                  _searchFood(value, "", _currentMinPrice, _currentMaxPrice, _favoritedItems);
+                }
+                else {
+                  _searchRestaurant(value, "");
+                }
+              },
             ),
-            onSubmitted: (value) {
-              if (_tabController.index == 0) {
-                _searchFood(value, "", _currentMinPrice, _currentMaxPrice, _favoritedItems);
-              }
-              else {
-                _searchRestaurant(value, "");
-              }
-            },
           ),
         ),
         actions: [
