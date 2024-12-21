@@ -44,7 +44,7 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Food',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.dinner_dining),
+            icon: Icon(Icons.store),
             label: 'Restaurant',
           ),
           BottomNavigationBarItem(
@@ -63,7 +63,8 @@ class _MainScreenState extends State<MainScreen> {
         currentIndex: _selectedIndex,
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
+        showUnselectedLabels: false,
+        showSelectedLabels: false,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed, // Ensure items remain the same size
       ),

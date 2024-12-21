@@ -121,7 +121,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
     });
     var searchURL = Uri.https(
       'joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id',
-      '/search/food/',
+      '/search/restaurant/',
       {
         'nama': name,
         'kategori': category,
@@ -205,6 +205,33 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
       });
     } else {
       _showFilterSheet(initialSize, tempMinPrice, tempMaxPrice, tempCategory, tempFavorited);
+    }
+  }
+
+  void _validateAndUpdatePrices(String value, bool isMin, StateSetter setModalState, double tempMinPrice, double tempMaxPrice) {
+    double? newValue = double.tryParse(value);
+    if (newValue == null) return;
+
+    if (isMin) {
+      if (newValue < _minPrice) {
+        newValue = _minPrice;
+      } else if (newValue > tempMaxPrice) {
+        newValue = tempMaxPrice;
+      }
+      setModalState(() {
+        tempMinPrice = newValue!;
+        _minPriceController.text = newValue.toInt().toString();
+      });
+    } else {
+      if (newValue > _maxPrice) {
+        newValue = _maxPrice;
+      } else if (newValue < tempMinPrice) {
+        newValue = tempMinPrice;
+      }
+      setModalState(() {
+        tempMaxPrice = newValue!;
+        _maxPriceController.text = newValue.toInt().toString();
+      });
     }
   }
 
@@ -310,9 +337,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                         keyboardType: TextInputType.number,
                                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                         onSubmitted: (value) {
-                                          setModalState(() {
-                                            tempMinPrice = double.tryParse(value) ?? 0;
-                                          });
+                                          _validateAndUpdatePrices(value, true, setModalState, tempMinPrice, tempMaxPrice);
                                         },
                                       ),
                                     ),
@@ -340,9 +365,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                         keyboardType: TextInputType.number,
                                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                         onSubmitted: (value) {
-                                          setModalState(() {
-                                            tempMaxPrice = double.tryParse(value) ?? _maxPrice;
-                                          });
+                                          _validateAndUpdatePrices(value, false, setModalState, tempMinPrice, tempMaxPrice);
                                         },
                                       ),
                                     ),
@@ -531,10 +554,10 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
               style: const TextStyle(fontSize: 14),
               onSubmitted: (value) {
                 if (_tabController.index == 0) {
-                  _searchFood(value, "", _currentMinPrice, _currentMaxPrice, _favoritedItems);
+                  _searchFood(value, _selectedCategory ?? "", _currentMinPrice, _currentMaxPrice, _favoritedItems);
                 }
                 else {
-                  _searchRestaurant(value, "");
+                  _searchRestaurant(value, _selectedCategory ?? "");
                 }
               },
             ),
@@ -727,6 +750,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
         },
         body: TabBarView(
           controller: _tabController,
+          physics: const NeverScrollableScrollPhysics(),
           children: [
             _buildFoodList(),
             _buildRestaurantList(),
