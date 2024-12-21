@@ -1,10 +1,13 @@
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import '../../screens/authentication/login.dart';
-import '../../models/userprofile/userprofile.dart';
-import '../../widgets/userprofile/form_modal_dialog.dart';
-import '../../widgets/userprofile/profile_section.dart';
+
+import '../../authentication/screens/login.dart';
+import '../models/userprofile.dart';
+import '../widgets/form_modal_dialog.dart';
+import '../widgets/profile_section.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -40,7 +43,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Future<UserProfile> fetchUserProfile(CookieRequest request) async {
-    final response = await request.get('http://127.0.0.1:8000/userprofile/userprofile/get/');
+    final response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/userprofile/userprofile/get');
 
     var data = response;
 
@@ -292,7 +295,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ElevatedButton(
                 onPressed: () async {
                   final response = await request.logout(
-                    "http://127.0.0.1:8000/logout-external/");
+                    "https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/auth/logout/");
                     String message = response["message"];
                     if (context.mounted) {
                         if (response['status']) {

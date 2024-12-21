@@ -1,41 +1,32 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:golekmakanrek_mobile/homepage/screens/main_screen.dart';
+import 'register.dart';
 
-import 'login.dart';
-
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
+
     return Scaffold(
       body: SafeArea(
         child: Stack(
           children: [
             Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.yellow.shade600,
-                      Colors.orange.shade500,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
+              child: Image.asset(
+                'assets/images/bg_web.png',
+                fit: BoxFit.fitHeight,
               ),
             ),
             Center(
@@ -50,17 +41,17 @@ class _RegisterPageState extends State<RegisterPage> {
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
+                      children: [
                         const Text(
-                          'Create Account',
+                          'Welcome Back!',
                           style: TextStyle(
-                            fontSize: 30.0,
+                            fontSize: 30,
                             fontWeight: FontWeight.bold,
                             color: Colors.green
                           ),
                         ),
-                        const SizedBox(height: 15.0),
-                        TextFormField(
+                        const SizedBox(height: 30.0),
+                        TextField(
                           controller: _usernameController,
                           decoration: const InputDecoration(
                             labelText: 'Username',
@@ -79,15 +70,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             contentPadding: EdgeInsets.symmetric(
                                 horizontal: 17.5, vertical: 17.5),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your username';
-                            }
-                            return null;
-                          },
                         ),
                         const SizedBox(height: 12.0),
-                        TextFormField(
+                        TextField(
                           controller: _passwordController,
                           decoration: const InputDecoration(
                             labelText: 'Password',
@@ -107,80 +92,79 @@ class _RegisterPageState extends State<RegisterPage> {
                                 horizontal: 17.5, vertical: 17.5),
                           ),
                           obscureText: true,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 12.0),
-                        TextFormField(
-                          controller: _confirmPasswordController,
-                          decoration: const InputDecoration(
-                            labelText: 'Confirm Password',
-                            labelStyle: TextStyle(color: Colors.black),
-                            hintText: 'Confirm your password',
-                            hintStyle:
-                                TextStyle(color: Color.fromARGB(255, 90, 90, 90)),
-                            border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                                borderSide: BorderSide(color: Colors.black)),
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10)),
-                                borderSide: BorderSide(color: Colors.black)),
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 17.5, vertical: 17.5),
-                          ),
-                          obscureText: true,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please confirm your password';
-                            }
-                            return null;
-                          },
                         ),
                         const SizedBox(height: 24.0),
                         ElevatedButton(
                           onPressed: () async {
                             String username = _usernameController.text;
-                            String password1 = _passwordController.text;
-                            String password2 = _confirmPasswordController.text;
-            
-                            final response = await request.postJson(
-                                "http://127.0.0.1:8000/register-external/",
-                                jsonEncode({
-                                  "username": username,
-                                  "password1": password1,
-                                  "password2": password2,
-                                }));
-                            if (context.mounted) {
-                              if (response['status'] == 'success') {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Successfully Sign Up!'),
-                                  ),
-                                );
+                            String password = _passwordController.text;
+                            // "https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/login-external/" (ubah ke url ini kl pws udah ga down)
+                            final response = await request.login(
+                                "http://127.0.0.1:8000/login-external/",
+                                {
+                                  'username': username,
+                                  'password': password,
+                                });
+        
+                            if (request.loggedIn) {
+                              String message = response['message'];
+                              String uname = response['username'];
+                              if (context.mounted) {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => const LoginPage()),
+                                      builder: (context) => const MainScreen()),
                                 );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Failed to Sign Up!'),
+                                ScaffoldMessenger.of(context)
+                                  ..hideCurrentSnackBar()
+                                  ..showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            "$message Selamat datang, $uname.")),
+                                  );
+                              }
+                            } else {
+                              if (context.mounted) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text(
+                                      'Login Gagal',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold
+                                      ),
+                                    ),
+                                    content: Text(response['message']),
+                                    actions: [
+                                      TextButton(
+                                        style: ButtonStyle(
+                                          backgroundColor: WidgetStatePropertyAll(Colors.orange.shade800),
+                                          shape: const WidgetStatePropertyAll(
+                                            RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(10))
+                                            )
+                                          )
+                                        ),
+                                        child: const Text(
+                                          'OK', 
+                                          style: TextStyle(
+                                            color: Colors.white
+                                            ),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                    ],
                                   ),
                                 );
                               }
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.black,
+                              foregroundColor: Colors.white,
                               minimumSize: const Size(double.infinity, 50),
-                              backgroundColor: Colors.orange.shade900,
+                              backgroundColor: Colors.orange.shade800,
                               padding: const EdgeInsets.symmetric(vertical: 16.0),
                               shape: const RoundedRectangleBorder(
                                   borderRadius:
@@ -189,17 +173,13 @@ class _RegisterPageState extends State<RegisterPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                (Icons.person_add_alt_rounded),
+                                (Icons.login),
                                 size: 30,
-                                color: Colors.white,
                               ),
                               SizedBox(
                                 width: 10,
                               ),
-                              Text("Sign In", style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white
-                              ))
+                              Text("Log In", style: TextStyle(fontSize: 18))
                             ],
                           ),
                         ),
@@ -209,21 +189,21 @@ class _RegisterPageState extends State<RegisterPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const LoginPage()),
+                                  builder: (context) => const RegisterPage()),
                             );
                           },
                           child: RichText(
                             text: TextSpan(
                               children: [
                                 TextSpan(
-                                  text: "Already have an account yet? ",
+                                  text: "Don't have an account? ",
                                   style: TextStyle(
-                                    color: Colors.grey.shade500,
+                                    color: Colors.grey.shade700,
                                     fontSize: 16.0,
                                   ),
                                 ),
                                 TextSpan(
-                                  text: ' Login',
+                                  text: 'Register',
                                   style: TextStyle(
                                     color: Colors.orange.shade800,
                                     fontSize: 16.0,

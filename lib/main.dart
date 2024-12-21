@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
-import 'package:golekmakanrek_mobile/screens/homepage/item_list.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:golekmakanrek_mobile/homepage/screens/splash_screen.dart';
+import 'package:golekmakanrek_mobile/homepage/screens/main_screen.dart';
+//import 'package:golekmakanrek_mobile/authentication/screens/login.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,16 +20,17 @@ class MyApp extends StatelessWidget {
         return request;
       },
       child: MaterialApp(
-        title: 'GolekMakanRek',
+        title: 'GolekMakanRek!',
         theme: ThemeData(
           useMaterial3: true,
-          textTheme: GoogleFonts.interTextTheme(),
           colorScheme: ColorScheme.fromSwatch(
             primarySwatch: Colors.deepOrange,
           ).copyWith(secondary: Colors.deepOrange[400]),
         ),
-        home: const ItemList(),
         debugShowCheckedModeBanner: false,
+        home: const SplashScreen(
+          nextScreen: MainScreen(),
+        ),
       ),
     );
   }

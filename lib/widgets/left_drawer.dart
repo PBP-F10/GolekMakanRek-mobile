@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:golekmakanrek_mobile/screens/about.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
-import 'package:golekmakanrek_mobile/screens/homepage/item_list.dart';
-import 'package:golekmakanrek_mobile/screens/authentication/login.dart';
-import 'package:golekmakanrek_mobile/screens/userprofile/user_profile_page.dart';
-import 'package:golekmakanrek_mobile/screens/resto_preview/restaurant_list.dart';
-import 'package:golekmakanrek_mobile/screens/wishlist/wishlist.dart';
+import 'package:golekmakanrek_mobile/homepage/screens/main_screen.dart';
+import 'package:golekmakanrek_mobile/authentication/screens/login.dart';
+import 'package:golekmakanrek_mobile/userprofile/screens/user_profile_page.dart';
+import 'package:golekmakanrek_mobile/wishlist/screens/wishlist.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -21,7 +21,7 @@ class LeftDrawer extends StatelessWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
             ),
-            child: const Column(
+              child: const Column(
               children: [
                 Text(
                   'GolekMakanRek',
@@ -41,24 +41,17 @@ class LeftDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const ItemList()),
+                MaterialPageRoute(builder: (context) => const MainScreen()),
               );
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.info),
-            title: const Text('About'),
-            onTap: () {
-              // Add your about page navigation here
-            },
+          const Divider(
+            color: Color(0xFF2C5F2D),
+            thickness: 1,
+            indent: 16,
+            endIndent: 16,
           ),
           if (!request.loggedIn) ...[
-            const Divider(
-              color: Color(0xFF2C5F2D),
-              thickness: 1,
-              indent: 16,
-              endIndent: 16,
-            ),
             ListTile(
               leading: const Icon(Icons.login),
               title: const Text('Login'),
@@ -70,30 +63,6 @@ class LeftDrawer extends StatelessWidget {
               },
             ),
           ] else ...[
-            ListTile(
-              leading: const Icon(Icons.fastfood_outlined),
-              title: const Text('Restaurant List'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  // todo: integrate with resto preview
-                  MaterialPageRoute(builder: (context) => const RestaurantList()),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.forum_outlined),
-              title: const Text('Forum'),
-              onTap: () {
-                // todo: forum app
-              },
-            ),
-            const Divider(
-              color: Color(0xFF2C5F2D),
-              thickness: 1,
-              indent: 16,
-              endIndent: 16,
-            ),
             ListTile(
               leading: const Icon(Icons.person_outlined),
               title: const Text('User Profile'),
@@ -119,6 +88,7 @@ class LeftDrawer extends StatelessWidget {
               title: const Text('Logout'),
               onTap: () async {
                 final response = await request.logout(
+                  // replace it with "https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/...
                     "http://127.0.0.1:8000/logout-external/");
                 if (response['status']) {
                   if (context.mounted) {
@@ -129,7 +99,7 @@ class LeftDrawer extends StatelessWidget {
                     );
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const ItemList()),
+                      MaterialPageRoute(builder: (context) => const MainScreen()),
                     );
                   }
                 }

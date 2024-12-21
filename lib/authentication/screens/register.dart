@@ -1,32 +1,41 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
-import 'package:golekmakanrek_mobile/screens/homepage/item_list.dart';
 import 'package:provider/provider.dart';
-import 'register.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+import 'login.dart';
+
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+class _RegisterPageState extends State<RegisterPage> {
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     final request = context.watch<CookieRequest>();
-
     return Scaffold(
       body: SafeArea(
         child: Stack(
           children: [
             Positioned.fill(
-              child: Image.asset(
-                'assets/images/bg_web.png',
-                fit: BoxFit.fitHeight,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.yellow.shade600,
+                      Colors.orange.shade500,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
               ),
             ),
             Center(
@@ -41,17 +50,17 @@ class _LoginPageState extends State<LoginPage> {
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: [
+                      children: <Widget>[
                         const Text(
-                          'Welcome Back!',
+                          'Create Account',
                           style: TextStyle(
-                            fontSize: 30,
+                            fontSize: 30.0,
                             fontWeight: FontWeight.bold,
                             color: Colors.green
                           ),
                         ),
-                        const SizedBox(height: 30.0),
-                        TextField(
+                        const SizedBox(height: 15.0),
+                        TextFormField(
                           controller: _usernameController,
                           decoration: const InputDecoration(
                             labelText: 'Username',
@@ -70,9 +79,15 @@ class _LoginPageState extends State<LoginPage> {
                             contentPadding: EdgeInsets.symmetric(
                                 horizontal: 17.5, vertical: 17.5),
                           ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your username';
+                            }
+                            return null;
+                          },
                         ),
                         const SizedBox(height: 12.0),
-                        TextField(
+                        TextFormField(
                           controller: _passwordController,
                           decoration: const InputDecoration(
                             labelText: 'Password',
@@ -92,79 +107,80 @@ class _LoginPageState extends State<LoginPage> {
                                 horizontal: 17.5, vertical: 17.5),
                           ),
                           obscureText: true,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your password';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12.0),
+                        TextFormField(
+                          controller: _confirmPasswordController,
+                          decoration: const InputDecoration(
+                            labelText: 'Confirm Password',
+                            labelStyle: TextStyle(color: Colors.black),
+                            hintText: 'Confirm your password',
+                            hintStyle:
+                                TextStyle(color: Color.fromARGB(255, 90, 90, 90)),
+                            border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                borderSide: BorderSide(color: Colors.black)),
+                            focusedBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                borderSide: BorderSide(color: Colors.black)),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 17.5, vertical: 17.5),
+                          ),
+                          obscureText: true,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please confirm your password';
+                            }
+                            return null;
+                          },
                         ),
                         const SizedBox(height: 24.0),
                         ElevatedButton(
                           onPressed: () async {
                             String username = _usernameController.text;
-                            String password = _passwordController.text;
-        
-                            final response = await request.login(
-                                "http://127.0.0.1:8000/login-external/",
-                                {
-                                  'username': username,
-                                  'password': password,
-                                });
-        
-                            if (request.loggedIn) {
-                              String message = response['message'];
-                              String uname = response['username'];
-                              if (context.mounted) {
+                            String password1 = _passwordController.text;
+                            String password2 = _confirmPasswordController.text;
+                            // "https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/register-external" (ubah ke url ini kl pws udah ga down)
+                            final response = await request.postJson(
+                                "http://127.0.0.1:8000/register-external/",
+                                jsonEncode({
+                                  "username": username,
+                                  "password1": password1,
+                                  "password2": password2,
+                                }));
+                            if (context.mounted) {
+                              if (response['status'] == 'success') {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Successfully Sign Up!'),
+                                  ),
+                                );
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => const ItemList()),
+                                      builder: (context) => const LoginPage()),
                                 );
-                                ScaffoldMessenger.of(context)
-                                  ..hideCurrentSnackBar()
-                                  ..showSnackBar(
-                                    SnackBar(
-                                        content: Text(
-                                            "$message Selamat datang, $uname.")),
-                                  );
-                              }
-                            } else {
-                              if (context.mounted) {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text(
-                                      'Login Gagal',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold
-                                      ),
-                                    ),
-                                    content: Text(response['message']),
-                                    actions: [
-                                      TextButton(
-                                        style: ButtonStyle(
-                                          backgroundColor: WidgetStatePropertyAll(Colors.orange.shade800),
-                                          shape: const WidgetStatePropertyAll(
-                                            RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.all(Radius.circular(10))
-                                            )
-                                          )
-                                        ),
-                                        child: const Text(
-                                          'OK', 
-                                          style: TextStyle(
-                                            color: Colors.white
-                                            ),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                    ],
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Failed to Sign Up!'),
                                   ),
                                 );
                               }
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.white,
+                              foregroundColor: Colors.black,
                               minimumSize: const Size(double.infinity, 50),
-                              backgroundColor: Colors.orange.shade800,
+                              backgroundColor: Colors.orange.shade900,
                               padding: const EdgeInsets.symmetric(vertical: 16.0),
                               shape: const RoundedRectangleBorder(
                                   borderRadius:
@@ -173,13 +189,17 @@ class _LoginPageState extends State<LoginPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                (Icons.login),
+                                (Icons.person_add_alt_rounded),
                                 size: 30,
+                                color: Colors.white,
                               ),
                               SizedBox(
                                 width: 10,
                               ),
-                              Text("Log In", style: TextStyle(fontSize: 18))
+                              Text("Sign In", style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white
+                              ))
                             ],
                           ),
                         ),
@@ -189,21 +209,21 @@ class _LoginPageState extends State<LoginPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const RegisterPage()),
+                                  builder: (context) => const LoginPage()),
                             );
                           },
                           child: RichText(
                             text: TextSpan(
                               children: [
                                 TextSpan(
-                                  text: "Don't have an account? ",
+                                  text: "Already have an account yet? ",
                                   style: TextStyle(
-                                    color: Colors.grey.shade700,
+                                    color: Colors.grey.shade500,
                                     fontSize: 16.0,
                                   ),
                                 ),
                                 TextSpan(
-                                  text: 'Register',
+                                  text: ' Login',
                                   style: TextStyle(
                                     color: Colors.orange.shade800,
                                     fontSize: 16.0,

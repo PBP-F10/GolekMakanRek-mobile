@@ -3,7 +3,7 @@ import 'package:golekmakanrek_mobile/widgets/left_drawer.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:golekmakanrek_mobile/models/wishlist/wishlist.dart';
+import 'package:golekmakanrek_mobile/wishlist/models/wishlist.dart';
 
 class WishlistPage extends StatefulWidget {
   const WishlistPage({super.key});

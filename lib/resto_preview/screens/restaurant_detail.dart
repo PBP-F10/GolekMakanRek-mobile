@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:golekmakanrek_mobile/models/resto_preview/restaurant.dart';
-import 'package:golekmakanrek_mobile/models/resto_preview/food.dart';
+import 'package:golekmakanrek_mobile/resto_preview/models/restaurant.dart';
+import 'package:golekmakanrek_mobile/resto_preview/models/food.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:pbp_django_auth/pbp_django_auth.dart';

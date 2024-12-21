@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:golekmakanrek_mobile/models/food_review/food.dart';
+import 'package:golekmakanrek_mobile/food_review/models/food.dart';
 import 'package:golekmakanrek_mobile/widgets/left_drawer.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';

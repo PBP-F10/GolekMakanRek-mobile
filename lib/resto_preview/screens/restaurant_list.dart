@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:golekmakanrek_mobile/models/resto_preview/restaurant.dart';
-import 'package:golekmakanrek_mobile/screens/resto_preview/restaurant_detail.dart';
+import 'package:golekmakanrek_mobile/resto_preview/models/restaurant.dart';
+import 'package:golekmakanrek_mobile/resto_preview/screens/restaurant_detail.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:golekmakanrek_mobile/widgets/left_drawer.dart';
 
 class RestaurantList extends StatefulWidget {
   const RestaurantList({super.key});
@@ -95,6 +96,7 @@ class _RestaurantListState extends State<RestaurantList> with SingleTickerProvid
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
+      drawer: const LeftDrawer(),
       body: _buildRestaurantList(),
     );
   }
