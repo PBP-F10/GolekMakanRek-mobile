@@ -417,32 +417,49 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                   ),
                                 ),
                                 const SizedBox(height: 10),
-                                FilterChip(
-                                  label: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.star, color: Colors.amber),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'Tampilkan Item Favorit Saja',
-                                        style: TextStyle(color: Colors.black),
-                                      ),
-                                    ],
-                                  ),
-                                  selected: tempFavorited,
-                                  shape: StadiumBorder(
-                                    side: BorderSide(
-                                      color: tempFavorited ? Theme.of(context).primaryColor : Colors.grey,
-                                    ),
-                                  ),
-                                  onSelected: (bool selected) {
+                                InkWell(
+                                  onTap: () {
                                     setModalState(() {
-                                      tempFavorited = selected;
+                                      tempFavorited = !tempFavorited;
                                     });
                                   },
-                                  backgroundColor: Colors.transparent,
-                                  selectedColor: Colors.transparent,
-                                  checkmarkColor: Theme.of(context).primaryColor,
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: tempFavorited ? Theme.of(context).colorScheme.primary.withOpacity(0.1) : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(24),
+                                      border: Border.all(
+                                        color: tempFavorited 
+                                          ? Theme.of(context).colorScheme.primary 
+                                          : Colors.grey.withOpacity(0.5),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.star,
+                                          size: 20,
+                                          color: tempFavorited 
+                                            ? Theme.of(context).colorScheme.primary
+                                            : Colors.grey.withOpacity(0.7),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Tampilkan Item Favorit Saja',
+                                          style: TextStyle(
+                                            color: tempFavorited 
+                                              ? Theme.of(context).colorScheme.primary
+                                              : Colors.grey.shade700,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ],
                             ],
