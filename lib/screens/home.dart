@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:golekmakanrek_mobile/widgets/left_drawer.dart';
-import 'userprofile/user_profile_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,20 +17,6 @@ class _HomePageState extends State<HomePage> {
         title: Text('Golek Makan Rek'),
       ),
       drawer: const LeftDrawer(),
-      body: Center(
-        child: CupertinoButton(
-          color: Colors.grey,
-          child: const Text("user profile"), 
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const UserProfilePage()
-              ),
-            );
-          }
-        ),
-      ),
     );
   }
 }

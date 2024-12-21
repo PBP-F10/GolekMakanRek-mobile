@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:golekmakanrek_mobile/screens/home.dart';
 import 'package:golekmakanrek_mobile/screens/food_review/restaurant_list.dart';
+import 'package:golekmakanrek_mobile/screens/resto_preview/restaurant_list.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -60,7 +61,19 @@ class LeftDrawer extends StatelessWidget {
                       MaterialPageRoute(builder: (context) => const RestaurantListPage()),
                   );
               },
-          ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.restaurant),
+              title: const Text('Daftar Restoran'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RestaurantList(),
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );
