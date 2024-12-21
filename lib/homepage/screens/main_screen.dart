@@ -25,9 +25,9 @@ class _MainScreenState extends State<MainScreen> {
     ];
 
     if (request.loggedIn) {
-      baseWidgets.add(const ItemList()); // navigate to forum page
+      baseWidgets.add(const ItemList()); // todo: navigate to forum page
     }
-    
+
     return baseWidgets;
   }
 

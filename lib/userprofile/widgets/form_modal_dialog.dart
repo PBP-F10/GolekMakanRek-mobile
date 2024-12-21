@@ -396,7 +396,7 @@ class _FormModalDialogState extends State<FormModalDialog> {
                                   if (_formKey.currentState!.validate()) {
                                       print(_dateOfBirthController.text);
                                       final response = await request.postJson(
-                                        "http://127.0.0.1:8000/userprofile/userprofile/update-external",
+                                        "https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/userprofile/userprofile/update-external",
                                         jsonEncode(<String, dynamic>{
                                           'description': _description,
                                           'first_name': _firstName,

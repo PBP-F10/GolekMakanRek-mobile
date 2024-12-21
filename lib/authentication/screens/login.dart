@@ -98,9 +98,9 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: () async {
                             String username = _usernameController.text;
                             String password = _passwordController.text;
-                            // "https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/login-external/" (ubah ke url ini kl pws udah ga down)
+        
                             final response = await request.login(
-                                "http://127.0.0.1:8000/login-external/",
+                                "http://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/auth/login/",
                                 {
                                   'username': username,
                                   'password': password,

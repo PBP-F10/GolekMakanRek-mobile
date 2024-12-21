@@ -14,7 +14,7 @@ class RestaurantListPage extends StatefulWidget {
 
 class _RestaurantListPageState extends State<RestaurantListPage> {
   Future<List<Restaurant>> fetchRestaurants(CookieRequest request) async {
-    final response = await request.get('http://127.0.0.1:8000/main/restaurant_json/');
+    final response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/main/restaurant_json/');
     var data = response;
     List<Restaurant> listRestaurants = [];
     for (var d in data) {

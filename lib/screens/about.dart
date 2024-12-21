@@ -26,7 +26,7 @@ class _AboutPageState extends State<AboutPage> {
       'wishlistDesc': 'Save favorite food to eat later',
       'statistics': 'GolekMakanRek! in Numbers',
       'menu': 'Menus',
-      'restaurants': 'Restaurants',
+      'accurate': 'Accurate',
       'users': 'Users',
     },
     'id': {
@@ -43,7 +43,7 @@ class _AboutPageState extends State<AboutPage> {
       'wishlistDesc': 'Simpan makanan favorit untuk dicicipi nanti',
       'statistics': 'GolekMakanRek! dalam Angka',
       'menu': 'Menu',
-      'restaurants': 'Restoran',
+      'accurate': 'Akurat',
       'users': 'Pengguna',
     },
   };
@@ -143,7 +143,6 @@ class _AboutPageState extends State<AboutPage> {
               ),
             ),
 
-            // Features Section with Modern Cards
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
@@ -184,7 +183,6 @@ class _AboutPageState extends State<AboutPage> {
               ),
             ),
 
-            // Statistics Section with Modern Design
             Container(
               margin: const EdgeInsets.all(24),
               padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
@@ -222,8 +220,8 @@ class _AboutPageState extends State<AboutPage> {
                       ),
                       _buildStatistic(
                         context: context,
-                        number: '10+',
-                        label: getText('restaurants'),
+                        number: '99%',
+                        label: getText('accurate'),
                       ),
                       Container(
                         height: 50,
@@ -246,7 +244,6 @@ class _AboutPageState extends State<AboutPage> {
         ),
       ),
 
-      // Language Switch Button
       floatingActionButton: Container(
         decoration: BoxDecoration(
           color: Colors.white,

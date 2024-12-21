@@ -148,9 +148,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             String username = _usernameController.text;
                             String password1 = _passwordController.text;
                             String password2 = _confirmPasswordController.text;
-                            // "https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/register-external" (ubah ke url ini kl pws udah ga down)
+            
                             final response = await request.postJson(
-                                "http://127.0.0.1:8000/register-external/",
+                                "http://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/auth/register",
                                 jsonEncode({
                                   "username": username,
                                   "password1": password1,

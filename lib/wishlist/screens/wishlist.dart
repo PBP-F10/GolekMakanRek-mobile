@@ -15,7 +15,7 @@ class WishlistPage extends StatefulWidget {
 class _WishlistPageState extends State<WishlistPage> {
   Future<List<Wishlist>> fetchWishlist() async {
     final request = context.read<CookieRequest>();
-    var response = await request.get('http://127.0.0.1:8000/food_review/wishlist/json/');
+    var response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/wishlist/json/');
 
     Welcome welcome = Welcome.fromJson(response);
     return welcome.wishlist;
@@ -26,7 +26,7 @@ class _WishlistPageState extends State<WishlistPage> {
     
     try {
       final response = await request.post(
-        'http://127.0.0.1:8000/food_review/wishlist/toggle/$foodId/',
+        'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/wishlist/toggle/$foodId/',
         {},
       );
       

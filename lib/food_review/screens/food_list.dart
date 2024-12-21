@@ -51,8 +51,8 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
 
   Future<List<Welcome>> fetchFoods(CookieRequest request) async {
     try {
-      final response = await request.get('http://127.0.0.1:8000/main/food_json/');
-      final ratingsResponse = await request.get('http://127.0.0.1:8000/food_review/foodrating_json/');
+      final response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/main/food_json/');
+      final ratingsResponse = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/foodrating_json/');
 
       List<dynamic> data;
       if (response is List) {
@@ -94,7 +94,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.post(
-        'http://127.0.0.1:8000/food_review/delete-rating/$ratingId/',
+        'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/delete-rating/$ratingId/',
         {}
       );
 
@@ -123,7 +123,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
 
   Future<void> _updateFoodRatings() async {
     final request = context.read<CookieRequest>();
-    final ratingsResponse = await request.get('http://127.0.0.1:8000/food_review/foodrating_json/');
+    final ratingsResponse = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/foodrating_json/');
     
     List<dynamic> ratingsData = ratingsResponse is List ? ratingsResponse : json.decode(ratingsResponse);
     Map<String, List<int>> foodRatings = {};
@@ -152,7 +152,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
     final request = context.read<CookieRequest>();
     try {
       final response = await request.get(
-        'http://127.0.0.1:8000/food_review/get-user-rating/$foodId/'
+        'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/get-user-rating/$foodId/'
       );
 
       if (response['has_rating']) {
@@ -178,7 +178,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
     
     try {
       final response = await request.get(
-        'http://127.0.0.1:8000/food_review/get-user-rating/$foodId/'
+        'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/get-user-rating/$foodId/'
       );
 
       if (response['has_rating']) {
@@ -233,8 +233,10 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
             ElevatedButton(
               onPressed: _currentRating > 0 ? () async {
                 final url = hasExistingRating
-                  ? 'http://127.0.0.1:8000/food_review/edit-rating/$existingRatingId/'
-                  : 'http://127.0.0.1:8000/food_review/add-rating/$foodId/';
+                // http://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/edit-rating/$existingRatingId/
+                // http://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/add-rating/$foodId/
+                  ? 'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/edit-rating/$existingRatingId/'
+                  : 'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/add-rating/$foodId/';
 
                 try {
                   final response = await request.post(
@@ -398,7 +400,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
   Future<bool> _checkIfWishlisted(String foodId) async {
     final request = context.read<CookieRequest>();
     final response = await request.get(
-      'http://127.0.0.1:8000/food_review/wishlist/check/?food_ids[]=$foodId',
+      'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/wishlist/check/?food_ids[]=$foodId',
     );
     
     if (response['status'] == 'success') {
@@ -412,7 +414,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
     
     try {
       final response = await request.post(
-        'http://127.0.0.1:8000/food_review/wishlist/toggle/$foodId/',
+        'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/wishlist/toggle/$foodId/',
         {},
       );
       
@@ -490,7 +492,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
             Expanded(
               child: FutureBuilder(
                 future: context.read<CookieRequest>().get(
-                  'http://127.0.0.1:8000/food_review/food/$foodId/comments/'
+                  'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/food/$foodId/comments/'
                 ),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -599,7 +601,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
 
                       try {
                         final response = await context.read<CookieRequest>().post(
-                          'http://127.0.0.1:8000/food_review/food/$foodId/comment/',
+                          'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/food_review/food/$foodId/comment/',
                           {
                             'comment': _commentController.text.trim()
                           },

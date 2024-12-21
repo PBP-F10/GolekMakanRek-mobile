@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:golekmakanrek_mobile/screens/about.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:golekmakanrek_mobile/homepage/screens/main_screen.dart';
@@ -88,8 +87,7 @@ class LeftDrawer extends StatelessWidget {
               title: const Text('Logout'),
               onTap: () async {
                 final response = await request.logout(
-                  // replace it with "https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/...
-                    "http://127.0.0.1:8000/logout-external/");
+                    "https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/logout-external/");
                 if (response['status']) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
