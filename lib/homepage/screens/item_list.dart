@@ -188,7 +188,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   }
 
   void _showFilterOptions() {
-    double initialSize = 0.8;
+    double initialSize = 0.9;
     // Create temporary variables and ensure they're within bounds
     double tempMinPrice = min(max(_currentMinPrice, _minPrice), _maxPrice);
     double tempMaxPrice = min(max(_currentMaxPrice, _minPrice), _maxPrice);
@@ -223,229 +223,257 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
               minChildSize: 0.4,
               maxChildSize: 0.9,
               builder: (BuildContext context, ScrollController _) {
-                return Container(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: SingleChildScrollView(
-                    controller: modalScrollController,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Center(
-                          child: Text(
-                            'Filter',
-                            style: TextStyle(
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.bold,
-                            ),
+                return Column(
+                  children: [
+                    // Sticky Header
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Colors.grey[300]!,
+                            width: 1,
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        if (_tabController.index == 0) ...[
-                          const Text(
-                            'Harga',
-                            style: TextStyle(
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          RangeSlider(
-                            values: RangeValues(tempMinPrice, tempMaxPrice),
-                            min: _minPrice,
-                            max: _maxPrice,
-                            divisions: max(((_maxPrice - _minPrice) / 1000).round(), 1),
-                            labels: RangeLabels(
-                              _currencyFormat.format(tempMinPrice),
-                              _currencyFormat.format(tempMaxPrice),
-                            ),
-                            onChanged: (RangeValues values) {
-                              setModalState(() {
-                                tempMinPrice = (values.start / 1000).round() * 1000;
-                                tempMaxPrice = (values.end / 1000).round() * 1000;
-                                
-                                _minPriceController.text = tempMinPrice.toInt().toString();
-                                _maxPriceController.text = tempMaxPrice.toInt().toString();
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _minPriceController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Minimum',
-                                    prefixIcon: const Icon(Icons.attach_money),
-                                    border: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.grey),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.grey),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                                  ),
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                  onSubmitted: (value) {
-                                    setModalState(() {
-                                      tempMinPrice = double.tryParse(value) ?? 0;
-                                    });
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: TextField(
-                                  controller: _maxPriceController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Maksimum',
-                                    prefixIcon: const Icon(Icons.attach_money),
-                                    border: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.grey),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderSide: const BorderSide(color: Colors.grey),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                                  ),
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                  onSubmitted: (value) {
-                                    setModalState(() {
-                                      tempMaxPrice = double.tryParse(value) ?? _maxPrice;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Kategori',
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Filter',
                           style: TextStyle(
-                            fontSize: 16.0,
+                            fontSize: 18.0,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        Column(
-                          children: [
-                            RadioListTile<String>(
-                              title: const Text('Semua'),
-                              value: "",
-                              groupValue: tempCategory,
-                              onChanged: (String? value) {
-                                setModalState(() {
-                                  tempCategory = value;
-                                });
-                              },
-                            ),
-                            ..._categories!.map(
-                              (category) => RadioListTile<String>(
-                                title: Text(category),
-                                value: category,
-                                groupValue: tempCategory,
-                                onChanged: (String? value) {
-                                  setModalState(() {
-                                    tempCategory = value;
-                                  });
-                                },
+                      ),
+                    ),
+                    // Scrollable Content
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: modalScrollController,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (_tabController.index == 0) ...[
+                                const Text(
+                                  'Harga',
+                                  style: TextStyle(
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                RangeSlider(
+                                  values: RangeValues(tempMinPrice, tempMaxPrice),
+                                  min: _minPrice,
+                                  max: _maxPrice,
+                                  divisions: max(((_maxPrice - _minPrice) / 1000).round(), 1),
+                                  labels: RangeLabels(
+                                    _currencyFormat.format(tempMinPrice),
+                                    _currencyFormat.format(tempMaxPrice),
+                                  ),
+                                  onChanged: (RangeValues values) {
+                                    setModalState(() {
+                                      tempMinPrice = (values.start / 1000).round() * 1000;
+                                      tempMaxPrice = (values.end / 1000).round() * 1000;
+                                      
+                                      _minPriceController.text = tempMinPrice.toInt().toString();
+                                      _maxPriceController.text = tempMaxPrice.toInt().toString();
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _minPriceController,
+                                        decoration: InputDecoration(
+                                          labelText: 'Minimum',
+                                          prefixIcon: const Icon(Icons.attach_money),
+                                          border: OutlineInputBorder(
+                                            borderSide: const BorderSide(color: Colors.grey),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(color: Colors.grey),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                                        ),
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                        onSubmitted: (value) {
+                                          setModalState(() {
+                                            tempMinPrice = double.tryParse(value) ?? 0;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _maxPriceController,
+                                        decoration: InputDecoration(
+                                          labelText: 'Maksimum',
+                                          prefixIcon: const Icon(Icons.attach_money),
+                                          border: OutlineInputBorder(
+                                            borderSide: const BorderSide(color: Colors.grey),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(color: Colors.grey),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                                        ),
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                        onSubmitted: (value) {
+                                          setModalState(() {
+                                            tempMaxPrice = double.tryParse(value) ?? _maxPrice;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                              ],
+                              const Text(
+                                'Kategori',
+                                style: TextStyle(
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        if (_tabController.index == 0 && loggedIn) ...[
-                          const Text(
-                            'Item Favorit',
-                            style: TextStyle(
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          FilterChip(
-                            label: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.star, color: Colors.amber),
-                                SizedBox(width: 4),
-                                Text(
-                                  'Tampilkan Item Favorit Saja',
-                                  style: TextStyle(color: Colors.black),
+                              const SizedBox(height: 10),
+                              Column(
+                                children: [
+                                  RadioListTile<String>(
+                                    title: const Text('Semua'),
+                                    value: "",
+                                    groupValue: tempCategory,
+                                    onChanged: (String? value) {
+                                      setModalState(() {
+                                        tempCategory = value;
+                                      });
+                                    },
+                                  ),
+                                  ..._categories!.map(
+                                    (category) => RadioListTile<String>(
+                                      title: Text(category),
+                                      value: category,
+                                      groupValue: tempCategory,
+                                      onChanged: (String? value) {
+                                        setModalState(() {
+                                          tempCategory = value;
+                                        }); 
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (_tabController.index == 0 && loggedIn) ...[
+                                const SizedBox(height: 20),
+                                const Text(
+                                  'Item Favorit',
+                                  style: TextStyle(
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                FilterChip(
+                                  label: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.star, color: Colors.amber),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Tampilkan Item Favorit Saja',
+                                        style: TextStyle(color: Colors.black),
+                                      ),
+                                    ],
+                                  ),
+                                  selected: tempFavorited,
+                                  shape: StadiumBorder(
+                                    side: BorderSide(
+                                      color: tempFavorited ? Theme.of(context).primaryColor : Colors.grey,
+                                    ),
+                                  ),
+                                  onSelected: (bool selected) {
+                                    setModalState(() {
+                                      tempFavorited = selected;
+                                    });
+                                  },
+                                  backgroundColor: Colors.transparent,
+                                  selectedColor: Colors.transparent,
+                                  checkmarkColor: Theme.of(context).primaryColor,
                                 ),
                               ],
-                            ),
-                            selected: tempFavorited,
-                            shape: StadiumBorder(
-                              side: BorderSide(
-                                color: tempFavorited ? Theme.of(context).primaryColor : Colors.grey,
-                              ),
-                            ),
-                            onSelected: (bool selected) {
-                              setModalState(() {
-                                tempFavorited = selected;
-                              });
-                            },
-                            backgroundColor: Colors.transparent,
-                            selectedColor: Colors.transparent,
-                            checkmarkColor: Theme.of(context).primaryColor,
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Handle filter submission
-                            setState(() {
-                              _currentMinPrice = tempMinPrice;
-                              _currentMaxPrice = tempMaxPrice;
-                              _selectedCategory = tempCategory;
-                              _favoritedItems = tempFavorited;
-                            });
-                            if (_tabController.index == 0) {
-                              _searchFood(_searchController.text, tempCategory ?? "", tempMinPrice, tempMaxPrice, tempFavorited);
-                            }
-                            else {
-                              _searchRestaurant(_searchController.text, tempCategory ?? "");
-                            }
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            minimumSize: const Size.fromHeight(50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text(
-                            'Cari',
-                            style: TextStyle(
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            )
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                    // Sticky Footer
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border(
+                          top: BorderSide(
+                            color: Colors.grey[300]!,
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Handle filter submission
+                          setState(() {
+                            _currentMinPrice = tempMinPrice;
+                            _currentMaxPrice = tempMaxPrice;
+                            _selectedCategory = tempCategory;
+                            _favoritedItems = tempFavorited;
+                          });
+                          if (_tabController.index == 0) {
+                            _searchFood(_searchController.text, tempCategory ?? "", tempMinPrice, tempMaxPrice, tempFavorited);
+                          }
+                          else {
+                            _searchRestaurant(_searchController.text, tempCategory ?? "");
+                          }
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          minimumSize: const Size.fromHeight(50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Cari',
+                          style: TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          )
+                        ),
+                      ),
+                    ),
+                  ],
                 );
               },
             );
