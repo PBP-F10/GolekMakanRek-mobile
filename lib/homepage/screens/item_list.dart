@@ -119,8 +119,16 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
     setState(() {
       _isListLoading = true;
     });
+    var searchURL = Uri.https(
+      'joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id',
+      '/search/food/',
+      {
+        'nama': name,
+        'kategori': category,
+      },
+      ).toString();
     final request = context.read<CookieRequest>();
-    final response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/search/restaurant/?nama=$name');
+    final response = await request.get(searchURL);
     var data = response;
     List<Restaurant> listRestaurant = [];
     for (var d in data) {
@@ -180,7 +188,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   }
 
   void _showFilterOptions() {
-    double initialSize = _tabController.index == 0 ? 0.8 : 0.4;
+    double initialSize = 0.8;
     // Create temporary variables and ensure they're within bounds
     double tempMinPrice = min(max(_currentMinPrice, _minPrice), _maxPrice);
     double tempMaxPrice = min(max(_currentMaxPrice, _minPrice), _maxPrice);
@@ -214,7 +222,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
               initialChildSize: initialSize,
               minChildSize: 0.4,
               maxChildSize: 0.9,
-              builder: (BuildContext context, ScrollController _) { // Ignore the provided controller
+              builder: (BuildContext context, ScrollController _) {
                 return Container(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: SingleChildScrollView(
@@ -225,7 +233,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                       children: [
                         const Center(
                           child: Text(
-                            'Filter Options',
+                            'Filter',
                             style: TextStyle(
                               fontSize: 18.0,
                               fontWeight: FontWeight.bold,
@@ -235,7 +243,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                         const SizedBox(height: 10),
                         if (_tabController.index == 0) ...[
                           const Text(
-                            'Price Range',
+                            'Harga',
                             style: TextStyle(
                               fontSize: 16.0,
                               fontWeight: FontWeight.bold,
@@ -268,7 +276,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                 child: TextField(
                                   controller: _minPriceController,
                                   decoration: InputDecoration(
-                                    labelText: 'Min Price',
+                                    labelText: 'Minimum',
                                     prefixIcon: const Icon(Icons.attach_money),
                                     border: OutlineInputBorder(
                                       borderSide: const BorderSide(color: Colors.grey),
@@ -298,7 +306,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                 child: TextField(
                                   controller: _maxPriceController,
                                   decoration: InputDecoration(
-                                    labelText: 'Max Price',
+                                    labelText: 'Maksimum',
                                     prefixIcon: const Icon(Icons.attach_money),
                                     border: OutlineInputBorder(
                                       borderSide: const BorderSide(color: Colors.grey),
@@ -329,40 +337,43 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                         ],
                         const SizedBox(height: 20),
                         const Text(
-                          'Categories',
+                          'Kategori',
                           style: TextStyle(
                             fontSize: 16.0,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 10),
-                        DropdownMenu<String>(
-                          initialSelection: tempCategory,
-                          hintText: 'Select a category',
-                          menuHeight: MediaQuery.of(context).size.height * 0.3,
-                          enableFilter: true,
-                          dropdownMenuEntries: [
-                            const DropdownMenuEntry<String>(
+                        Column(
+                          children: [
+                            RadioListTile<String>(
+                              title: const Text('Semua'),
                               value: "",
-                              label: 'All',
+                              groupValue: tempCategory,
+                              onChanged: (String? value) {
+                                setModalState(() {
+                                  tempCategory = value;
+                                });
+                              },
                             ),
                             ..._categories!.map(
-                              (category) => DropdownMenuEntry<String>(
+                              (category) => RadioListTile<String>(
+                                title: Text(category),
                                 value: category,
-                                label: category,
+                                groupValue: tempCategory,
+                                onChanged: (String? value) {
+                                  setModalState(() {
+                                    tempCategory = value;
+                                  });
+                                },
                               ),
                             ),
                           ],
-                          onSelected: (String? newValue) {
-                            setModalState(() {
-                              tempCategory = newValue;
-                            });
-                          },
                         ),
                         const SizedBox(height: 20),
                         if (_tabController.index == 0 && loggedIn) ...[
                           const Text(
-                            'Show Favorited Items',
+                            'Item Favorit',
                             style: TextStyle(
                               fontSize: 16.0,
                               fontWeight: FontWeight.bold,
@@ -376,7 +387,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                 Icon(Icons.star, color: Colors.amber),
                                 SizedBox(width: 4),
                                 Text(
-                                  'Show Favorited Items Only',
+                                  'Tampilkan Item Favorit Saja',
                                   style: TextStyle(color: Colors.black),
                                 ),
                               ],
@@ -424,7 +435,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                             ),
                           ),
                           child: const Text(
-                            'Search',
+                            'Cari',
                             style: TextStyle(
                               fontSize: 16.0,
                               fontWeight: FontWeight.bold,
@@ -442,7 +453,6 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
         );
       },
     ).whenComplete(() {
-      // Dispose the controller when the bottom sheet is closed
       modalScrollController.dispose();
     });
   }
@@ -465,7 +475,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
           child: TextField(
             controller: _searchController,
             decoration: const InputDecoration(
-              hintText: 'Search...',
+              hintText: 'Cari...',
               border: InputBorder.none,
               contentPadding: EdgeInsets.symmetric(horizontal: 16),
             ),
@@ -652,8 +662,8 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                 TabBar(
                   controller: _tabController,
                   tabs: const [
-                    Tab(text: 'Food'),
-                    Tab(text: 'Restaurant'),
+                    Tab(text: 'Makanan'),
+                    Tab(text: 'Restoran'),
                   ],
                   indicatorWeight: 3,
                   dividerColor: Colors.grey[100],
@@ -700,7 +710,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                   // ),
                   SizedBox(height: 20),
                   Text(
-                    'No food items found!',
+                    'Tidak ada item yang ditemukan!',
                     style: TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.w600,
@@ -803,7 +813,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('You must be logged in to favorite items!'),
+                                      content: Text('Silahkan login untuk menambah item ini ke favorit!'),
                                     ),
                                   );
                                 }
@@ -864,7 +874,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                   // ),
                   SizedBox(height: 20),
                   Text(
-                    'No restaurants found!',
+                    'Tidak ada restoran yang ditemukan!',
                     style: TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.w600,
