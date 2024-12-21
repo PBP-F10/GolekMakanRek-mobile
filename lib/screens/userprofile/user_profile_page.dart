@@ -1,5 +1,3 @@
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
@@ -42,7 +40,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Future<UserProfile> fetchUserProfile(CookieRequest request) async {
-    final response = await request.get('http://127.0.0.1:8000/userprofile/userprofile/get');
+    final response = await request.get('http://127.0.0.1:8000/userprofile/userprofile/get/');
 
     var data = response;
 

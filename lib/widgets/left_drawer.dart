@@ -5,6 +5,7 @@ import 'package:golekmakanrek_mobile/screens/homepage/item_list.dart';
 import 'package:golekmakanrek_mobile/screens/authentication/login.dart';
 import 'package:golekmakanrek_mobile/screens/userprofile/user_profile_page.dart';
 import 'package:golekmakanrek_mobile/screens/food_review/restaurant_list.dart';
+import 'package:golekmakanrek_mobile/screens/wishlist/wishlist.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer({super.key});
@@ -107,7 +108,10 @@ class LeftDrawer extends StatelessWidget {
               leading: const Icon(Icons.list),
               title: const Text('Wishlist'),
               onTap: () {
-                // todo: wishlist
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const WishlistPage()),
+                );
               },
             ),
             ListTile(

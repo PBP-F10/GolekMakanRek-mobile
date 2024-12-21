@@ -370,6 +370,65 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
     );
   }
 
+  Widget _buildWishlistButton(String foodId) {
+    return FutureBuilder<bool>(
+      future: _checkIfWishlisted(foodId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          );
+        }
+        
+        bool isWishlisted = snapshot.data ?? false;
+        
+        return IconButton(
+          icon: Icon(
+            isWishlisted ? Icons.bookmark : Icons.bookmark_border,
+            color: isWishlisted ? const Color.fromARGB(255, 0, 71, 2) : null,
+          ),
+          onPressed: () => _toggleWishlist(foodId),
+        );
+      },
+    );
+  }
+
+  Future<bool> _checkIfWishlisted(String foodId) async {
+    final request = context.read<CookieRequest>();
+    final response = await request.get(
+      'http://127.0.0.1:8000/food_review/wishlist/check/?food_ids[]=$foodId',
+    );
+    
+    if (response['status'] == 'success') {
+      return response['wishlisted_items'].contains(foodId);
+    }
+    return false;
+  }
+
+  Future<void> _toggleWishlist(String foodId) async {
+    final request = context.read<CookieRequest>();
+    
+    try {
+      final response = await request.post(
+        'http://127.0.0.1:8000/food_review/wishlist/toggle/$foodId/',
+        {},
+      );
+      
+      if (response['status'] == 'success') {
+        setState(() {}); // refresh (todo: search a better way)
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Failed to update wishlist"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   Widget _buildRatingDisplay(String foodId) {
     return Row(
       children: [
@@ -548,9 +607,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
 
                         if (response['status'] == 'success') {
                           _commentController.clear();
-                          // Close keyboard
                           FocusScope.of(context).unfocus();
-                          // Refresh comments by rebuilding the widget
                           Navigator.pop(context);
                           _showCommentsSheet(context, foodId, foodName);
                         }
@@ -581,9 +638,6 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
       appBar: AppBar(
         title: Text(
           'Daftar Makanan - ${widget.restaurantName}',
-          style: TextStyle(
-            color: Colors.white,
-          ),
         ),
         centerTitle: true,
       ),
@@ -594,7 +648,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.deepOrange,
+              color: const Color.fromARGB(255, 255, 173, 51),
               borderRadius: const BorderRadius.vertical(
                 bottom: Radius.circular(20),
               ),
@@ -669,6 +723,7 @@ class _RestaurantFoodListPageState extends State<RestaurantFoodListPage> {
                               ),
                               child: Row(
                                 children: [
+                                  _buildWishlistButton(foodId),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
