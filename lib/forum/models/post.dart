@@ -46,6 +46,7 @@ class PostFields {
     int reportCount;
     DateTime createdAt;
     String? restaurant;
+    bool? isLiked;
 
     PostFields({
         required this.user,

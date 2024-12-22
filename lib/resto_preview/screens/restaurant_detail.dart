@@ -596,7 +596,12 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                     itemBuilder: (context, index) {
                       final comment = comments[index];
                       
-                      final formattedTime = comment['formatted_time'] ?? 'Unknown time';
+                      String displayTime = '';
+                      if (comment['formatted_time'] != null) {
+                          DateTime commentTime = DateFormat("MMMM d, yyyy h:mm a").parse(comment['formatted_time']);
+                          commentTime = commentTime.add(const Duration(hours: 7));
+                          displayTime = DateFormat('dd MMMM yyyy, HH:mm', 'id_ID').format(commentTime);
+                      }
                       
                       return Card(
                         margin: const EdgeInsets.only(bottom: 16),
@@ -624,7 +629,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                                           ),
                                         ),
                                         Text(
-                                          formattedTime,
+                                          displayTime,
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Colors.grey[600],
@@ -875,15 +880,17 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
             ),
             Container(
               padding: const EdgeInsets.all(16.0),
-              color: Colors.orange[100],
+              color: Colors.orange.shade50,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Menu Items",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold
+                  const Center(
+                    child: Text(
+                      "Menu Items",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
