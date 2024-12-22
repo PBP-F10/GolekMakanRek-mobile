@@ -1,15 +1,14 @@
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:golekmakanrek_mobile/homepage/models/food.dart';
-import 'package:golekmakanrek_mobile/homepage/models/restaurant.dart';
-import 'package:golekmakanrek_mobile/widgets/left_drawer.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:golekmakanrek_mobile/homepage/models/food.dart';
+import 'package:golekmakanrek_mobile/homepage/models/restaurant.dart';
+import 'package:golekmakanrek_mobile/widgets/left_drawer.dart';
 
 class ItemList extends StatefulWidget {
   const ItemList({super.key});
@@ -834,117 +833,107 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                 ),
                 elevation: 6,
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ItemList(),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                snapshot.data![index].fields.nama,
-                                style: const TextStyle(
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  if (snapshot.data![index].fields.diskon > 0) ...[
-                                    Text(
-                                      formatPrice(snapshot.data![index].fields.harga),
-                                      style: const TextStyle(
-                                        color: Colors.red,
-                                        decoration: TextDecoration.lineThrough,
-                                        decorationColor: Colors.red,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      formatPrice((snapshot.data![index].fields.harga * (1 - snapshot.data![index].fields.diskon / 100)).toInt()),
-                                      style: const TextStyle(
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        "-${snapshot.data![index].fields.diskon}%",
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ] else ...[
-                                    Text(formatPrice(snapshot.data![index].fields.harga), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                  ],
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Text(snapshot.data![index].fields.deskripsi.toString().trim()),
-                            ],
-                          ),
-                        ),
-                        Column(
+                child: Container(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            IconButton(
-                              icon: Icon(
-                                _starredItems.contains(snapshot.data![index].pk) ? Icons.star : Icons.star_border,
-                                color: _starredItems.contains(snapshot.data![index].pk) ? const Color.fromARGB(255, 245, 158, 11) : null,
+                            Text(
+                              snapshot.data![index].fields.nama,
+                              style: const TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.w600,
                               ),
-                              onPressed: () async {
-                                if (!loggedIn) {
-                                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Silahkan login untuk menambah item ini ke favorit!'),
-                                    ),
-                                  );
-                                }
-                                else {
-                                  bool status = await updateLikes(snapshot.data![index].pk);
-                                  if (status) {
-                                    setState(() {
-                                      if (_starredItems.contains(snapshot.data![index].pk)) {
-                                        _starredItems.remove(snapshot.data![index].pk);
-                                      } else {
-                                        _starredItems.add(snapshot.data![index].pk);
-                                      }
-                                      _starCounts[snapshot.data![index].pk] = _starredItems.contains(snapshot.data![index].pk)
-                                          ? (_starCounts[snapshot.data![index].pk] ?? 0) + 1
-                                          : (_starCounts[snapshot.data![index].pk] ?? 1) - 1;
-                                    });
-                                  }
-                                }
-                              },
                             ),
-                            Text(_starCounts[snapshot.data![index].pk].toString()),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                if (snapshot.data![index].fields.diskon > 0) ...[
+                                  Text(
+                                    formatPrice(snapshot.data![index].fields.harga),
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      decoration: TextDecoration.lineThrough,
+                                      decorationColor: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    formatPrice((snapshot.data![index].fields.harga * (1 - snapshot.data![index].fields.diskon / 100)).toInt()),
+                                    style: const TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      "-${snapshot.data![index].fields.diskon}%",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ] else ...[
+                                  Text(formatPrice(snapshot.data![index].fields.harga), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Text(snapshot.data![index].fields.deskripsi.toString().trim()),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                      Column(
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              _starredItems.contains(snapshot.data![index].pk) ? Icons.star : Icons.star_border,
+                              color: _starredItems.contains(snapshot.data![index].pk) ? const Color.fromARGB(255, 245, 158, 11) : null,
+                            ),
+                            onPressed: () async {
+                              if (!loggedIn) {
+                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Silahkan login untuk menambah item ini ke favorit!'),
+                                  ),
+                                );
+                              }
+                              else {
+                                bool status = await updateLikes(snapshot.data![index].pk);
+                                if (status) {
+                                  setState(() {
+                                    if (_starredItems.contains(snapshot.data![index].pk)) {
+                                      _starredItems.remove(snapshot.data![index].pk);
+                                    } else {
+                                      _starredItems.add(snapshot.data![index].pk);
+                                    }
+                                    _starCounts[snapshot.data![index].pk] = _starredItems.contains(snapshot.data![index].pk)
+                                        ? (_starCounts[snapshot.data![index].pk] ?? 0) + 1
+                                        : (_starCounts[snapshot.data![index].pk] ?? 1) - 1;
+                                  });
+                                }
+                              }
+                            },
+                          ),
+                          Text(_starCounts[snapshot.data![index].pk].toString()),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -998,32 +987,22 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                 ),
                 elevation: 6,
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ItemList(),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          snapshot.data![index].fields.nama,
-                          style: const TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.w600,
-                          ),
+                child: Container(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        snapshot.data![index].fields.nama,
+                        style: const TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w600,
                         ),
-                        const SizedBox(height: 10),
-                        Text(snapshot.data![index].fields.deskripsi.toString().trim()),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(snapshot.data![index].fields.deskripsi.toString().trim()),
+                    ],
                   ),
                 ),
               ),
