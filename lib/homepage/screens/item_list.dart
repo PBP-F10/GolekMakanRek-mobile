@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:golekmakanrek_mobile/homepage/models/food.dart';
 import 'package:golekmakanrek_mobile/homepage/models/restaurant.dart';
+import 'package:golekmakanrek_mobile/homepage/widgets/left_drawer.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -188,6 +189,10 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   }
 
   void _showFilterOptions() {
+    // Initialize text controllers with current values
+    _minPriceController.text = _currentMinPrice.toInt().toString();
+    _maxPriceController.text = _currentMaxPrice.toInt().toString();
+    
     double initialSize = 0.9;
     // Create temporary variables and ensure they're within bounds
     double tempMinPrice = min(max(_currentMinPrice, _minPrice), _maxPrice);
@@ -208,35 +213,15 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
     }
   }
 
-  void _validateAndUpdatePrices(String value, bool isMin, StateSetter setModalState, double tempMinPrice, double tempMaxPrice) {
-    double? newValue = double.tryParse(value);
-    if (newValue == null) return;
-
-    if (isMin) {
-      if (newValue < _minPrice) {
-        newValue = _minPrice;
-      } else if (newValue > tempMaxPrice) {
-        newValue = tempMaxPrice;
-      }
-      setModalState(() {
-        tempMinPrice = newValue!;
-        _minPriceController.text = newValue.toInt().toString();
-      });
-    } else {
-      if (newValue > _maxPrice) {
-        newValue = _maxPrice;
-      } else if (newValue < tempMinPrice) {
-        newValue = tempMinPrice;
-      }
-      setModalState(() {
-        tempMaxPrice = newValue!;
-        _maxPriceController.text = newValue.toInt().toString();
-      });
-    }
-  }
-
   void _showFilterSheet(double initialSize, double tempMinPrice, double tempMaxPrice, String? tempCategory, bool tempFavorited) {
     final ScrollController modalScrollController = ScrollController();
+    
+    // Store original values to restore on cancel
+    final originalMinPrice = _currentMinPrice;
+    final originalMaxPrice = _currentMaxPrice;
+    final originalCategory = _selectedCategory;
+    final originalFavorited = _favoritedItems;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -337,7 +322,17 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                         keyboardType: TextInputType.number,
                                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                         onSubmitted: (value) {
-                                          _validateAndUpdatePrices(value, true, setModalState, tempMinPrice, tempMaxPrice);
+                                          if (value.isNotEmpty) {
+                                            double? newValue = double.tryParse(value);
+                                            if (newValue != null) {
+                                              setModalState(() {
+                                                if (newValue! < _minPrice) newValue = _minPrice;
+                                                if (newValue! > tempMaxPrice) newValue = tempMaxPrice;
+                                                tempMinPrice = newValue!;
+                                                _minPriceController.text = newValue!.toInt().toString();
+                                              });
+                                            }
+                                          }
                                         },
                                       ),
                                     ),
@@ -365,7 +360,17 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                                         keyboardType: TextInputType.number,
                                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                         onSubmitted: (value) {
-                                          _validateAndUpdatePrices(value, false, setModalState, tempMinPrice, tempMaxPrice);
+                                          if (value.isNotEmpty) {
+                                            double? newValue = double.tryParse(value);
+                                            if (newValue != null) {
+                                              setModalState(() {
+                                                if (newValue! < tempMinPrice) newValue = tempMinPrice;
+                                                if (newValue! > _maxPrice) newValue = _maxPrice;
+                                                tempMaxPrice = newValue!;
+                                                _maxPriceController.text = newValue!.toInt().toString();
+                                              });
+                                            }
+                                          }
                                         },
                                       ),
                                     ),
@@ -521,6 +526,14 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
         );
       },
     ).whenComplete(() {
+      // Reset text controllers and state to original values if modal was dismissed
+      if (_currentMinPrice == originalMinPrice && 
+          _currentMaxPrice == originalMaxPrice && 
+          _selectedCategory == originalCategory && 
+          _favoritedItems == originalFavorited) {
+        _minPriceController.text = originalMinPrice.toInt().toString();
+        _maxPriceController.text = originalMaxPrice.toInt().toString();
+      }
       modalScrollController.dispose();
     });
   }
@@ -590,6 +603,7 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
           ),
         ],
       ),
+      drawer: const LeftDrawer(),
       body: NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
           return <Widget>[
