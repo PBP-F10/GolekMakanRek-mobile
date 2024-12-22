@@ -1,9 +1,5 @@
 <!-- Kalau ada yang mau ditambah/diedit boleh yaa, misal mau tambah emoji, bikin bagus tampilannya, dll. -->
 # 🍲 GolekMakanRek-Mobile!  🍜
-[![Deploy](https://github.com/PBP-F10/GolekMakanRek-mobile/actions/workflows/deploy.yml/badge.svg)](https://github.com/PBP-F10/GolekMakanRek-mobile/actions/workflows/deploy.yml)
-[![Pre-Release](https://github.com/PBP-F10/GolekMakanRek-mobile/actions/workflows/pre-release.yml/badge.svg)](https://github.com/PBP-F10/GolekMakanRek-mobile/actions/workflows/pre-release.yml)
-[![Release](https://github.com/PBP-F10/GolekMakanRek-mobile/actions/workflows/release.yml/badge.svg)](https://github.com/PBP-F10/GolekMakanRek-mobile/actions/workflows/release.yml)
-[![Build status](https://build.appcenter.ms/v0.1/apps/a95e875b-067a-4437-80b4-4862d81e17c4/branches/main/badge)](https://appcenter.ms)
 
 **GolekMakanRek!** adalah aplikasi untuk Anda para penduduk dan juga turis di Surabaya untuk memilih kuliner sesuai selera.
 
@@ -50,8 +46,8 @@ Pengguna yang sudah melakukan register dan login dapat:
 #### b. 🔒 Pengguna (belum terautentikasi)
 Pengguna yang belum melakukan register dan login hanya dapat:
 - Membuka homepage.
-- Melakukan pencarian dan filtering daftar makanan dan restoran.
-- Membuka fitur food preview dan restaurant preview.
+- Melakukan pencarian dan filtering daftar makanan dan restoran. 
+- Membuka fitur food preview dan restaurant preview tetapi tidak bisa memberikan rating maupun ulasan.
 
 ## Alur Integrasi
 Alur integrasi aplikasi Flutter ke proyek web kami adalah sebagai berikut:
