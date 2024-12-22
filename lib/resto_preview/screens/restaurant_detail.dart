@@ -873,8 +873,9 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                 ],
               ),
             ),
-            Padding(
+            Container(
               padding: const EdgeInsets.all(16.0),
+              color: Colors.orange[100],
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

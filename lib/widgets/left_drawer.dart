@@ -20,18 +20,16 @@ class LeftDrawer extends StatelessWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
             ),
-              child: const Column(
-              children: [
-                Text(
-                  'GolekMakanRek',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+            child: const Center(
+              child: Text(
+                'GolekMakanRek',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
-              ],
+              ),
             ),
           ),
           ListTile(
