@@ -34,7 +34,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   void initState() {
     super.initState();
     // Initialize the controller with the current date
-    fetchTopLikedFoods();
+    
   }
 
   @override
@@ -45,15 +45,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Future<void> fetchTopLikedFoods() async {
-    try {
       CookieRequest request = CookieRequest();
       final response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/userprofile/userprofile/top-liked-foods');
       topLikedFoods = TopLikedFoods.fromJson(response);
     // ignore: empty_catches
-    } catch (e) {}
   }
 
   Future<UserProfile> fetchUserProfile(CookieRequest request) async {
+    await fetchTopLikedFoods();
     final response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/userprofile/userprofile/get');
 
     var data = response;
