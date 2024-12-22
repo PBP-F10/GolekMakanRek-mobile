@@ -63,7 +63,7 @@ Dataset yang digunakan berasal dari [Kaggle - Indonesia food delivery Gofood pro
 Link video iklan aplikasi [GolekMakanRek! - Aplikasi Pecinta Kuliner Surabaya](https://youtu.be/GJ1O_FzHVio).
 
 ## Link Aplikasi
-Link Aplikasi dapas diakses di [GolekMakanRek! - App](https://install.appcenter.ms/orgs/pbp-f10/apps/golekmakanrek/distribution_groups/public/releases/5).
+Link Aplikasi dapat diakses di [GolekMakanRek! - APK](https://install.appcenter.ms/orgs/pbp-f10/apps/golekmakanrek/distribution_groups/public/releases/5).
 
 ## Berita Acara Kelompok F10
 Berita acara kelompok F10 dapat diakses di [link berikut](https://docs.google.com/spreadsheets/d/1wk12z7HfZcbrUoaX8TTx7DbVCwNlyiNLAyX6wdyXSx8/edit?gid=0#gid=0)
