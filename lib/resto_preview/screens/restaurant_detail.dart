@@ -590,65 +590,59 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                   final comments = (snapshot.data?['comments'] as List?) ?? [];
 
                   return ListView.builder(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: comments.length,
-                  itemBuilder: (context, index) {
-                    final comment = comments[index];
-                    DateTime commentTime;
-                    try {
-                      commentTime = DateTime.parse(comment['timestamp']);
-                    } catch (e) {
-                      print('Error parsing timestamp: $e');
-                      commentTime = DateTime.now();
-                    }
-                    String formattedTime = DateFormat('dd MMMM yyyy, HH:mm', 'id_ID').format(commentTime);
-                    
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  child: Text(
-                                    comment['username'][0].toUpperCase(),
+                    controller: scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: comments.length,
+                    itemBuilder: (context, index) {
+                      final comment = comments[index];
+                      
+                      final formattedTime = comment['formatted_time'] ?? 'Unknown time';
+                      
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    child: Text(
+                                      comment['username'][0].toUpperCase(),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        comment['username'],
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          comment['username'],
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        formattedTime,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
+                                        Text(
+                                          formattedTime,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(comment['comment']),
-                          ],
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(comment['comment']),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                );
+                      );
+                    },
+                  );
                 },
               ),
             ),
@@ -696,7 +690,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                         final response = await context.read<CookieRequest>().post(
                           '$baseUrl/food_review/food/$foodId/comment/',
                           {
-                            'comment': _commentController.text.trim()
+                            'comment': _commentController.text.trim(),
                           },
                         );
 
