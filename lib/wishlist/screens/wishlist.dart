@@ -55,7 +55,7 @@ class _WishlistPageState extends State<WishlistPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Wishlist List'),
-        backgroundColor: Colors.orange,
+        backgroundColor: Colors.orange.shade800,
       ),
       drawer: const LeftDrawer(),
       body: FutureBuilder<List<Wishlist>>(

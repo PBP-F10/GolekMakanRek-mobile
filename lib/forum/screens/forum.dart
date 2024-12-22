@@ -176,7 +176,7 @@ class _ForumPageState extends State<ForumPage> {
               ? "Welcome, $currentUsername!"
               : "Jelajahi Makanan di Surabaya!",
         ),
-        backgroundColor: Colors.orange,
+        backgroundColor: Colors.orange.shade800,
         centerTitle: true,
       ),
       drawer: const LeftDrawer(),

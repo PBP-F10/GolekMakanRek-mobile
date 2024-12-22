@@ -97,10 +97,6 @@ class _RestaurantListState extends State<RestaurantList> with SingleTickerProvid
       appBar: AppBar(
         title: const Text(
           "Restaurant Preview",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
         ),
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.primary,
