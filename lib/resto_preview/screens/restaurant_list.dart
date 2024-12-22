@@ -4,6 +4,7 @@ import 'package:golekmakanrek_mobile/resto_preview/screens/restaurant_detail.dar
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:golekmakanrek_mobile/widgets/left_drawer.dart';
+import 'package:golekmakanrek_mobile/food_review/widgets/pop_up_login.dart';
 
 const String baseUrl = 'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id';
 
@@ -57,6 +58,11 @@ class _RestaurantListState extends State<RestaurantList> with SingleTickerProvid
 
   void toggleFollow(String restaurant) async {
     final request = context.read<CookieRequest>();
+
+    if (!await LoginCheckHelper.checkLoginStatus(context)) {
+      return;
+    }
+
     bool isFollowed = followStatus[restaurant] ?? false;
 
     setState(() {

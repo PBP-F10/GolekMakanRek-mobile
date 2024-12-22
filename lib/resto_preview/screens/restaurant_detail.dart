@@ -7,6 +7,7 @@ import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:golekmakanrek_mobile/food_review/widgets/pop_up_login.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 const String baseUrl = 'https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id';
 
@@ -33,6 +34,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
   @override
   void initState() {
     super.initState();
+    initializeDateFormatting('id_ID', null);
     _fetchRestaurantRating();
     _fetchUserRating();
     _initializeData();
@@ -526,7 +528,6 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
   }
 
   void _showCommentsSheet(BuildContext context, String foodId, String foodName) async {
-    
     if (!await LoginCheckHelper.checkLoginStatus(context)) {
       return;
     }
@@ -589,56 +590,65 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                   final comments = (snapshot.data?['comments'] as List?) ?? [];
 
                   return ListView.builder(
-                    controller: scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: comments.length,
-                    itemBuilder: (context, index) {
-                      final comment = comments[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    child: Text(
-                                      comment['username'][0].toUpperCase(),
-                                    ),
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: comments.length,
+                  itemBuilder: (context, index) {
+                    final comment = comments[index];
+                    DateTime commentTime;
+                    try {
+                      commentTime = DateTime.parse(comment['timestamp']);
+                    } catch (e) {
+                      print('Error parsing timestamp: $e');
+                      commentTime = DateTime.now();
+                    }
+                    String formattedTime = DateFormat('dd MMMM yyyy, HH:mm', 'id_ID').format(commentTime);
+                    
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  child: Text(
+                                    comment['username'][0].toUpperCase(),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          comment['username'],
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        comment['username'],
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        Text(
-                                          comment['formatted_time'],
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                          ),
+                                      ),
+                                      Text(
+                                        formattedTime,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Text(comment['comment']),
-                            ],
-                          ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(comment['comment']),
+                          ],
                         ),
-                      );
-                    },
-                  );
+                      ),
+                    );
+                  },
+                );
                 },
               ),
             ),
@@ -663,7 +673,6 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                 children: [
                   Expanded(
                     child: TextField(
-                      
                       controller: _commentController,
                       decoration: InputDecoration(
                         hintText: 'Write a review...',

@@ -150,7 +150,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             String password2 = _confirmPasswordController.text;
             
                             final response = await request.postJson(
-                                "http://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/auth/register",
+                                "https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/register-external/",
                                 jsonEncode({
                                   "username": username,
                                   "password1": password1,
