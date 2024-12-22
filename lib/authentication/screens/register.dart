@@ -149,7 +149,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             String password1 = _passwordController.text;
                             String password2 = _confirmPasswordController.text;
             
-                            final response = await request.postJson(
+                            final response = await request.post(
                                 "https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/register-external/",
                                 jsonEncode({
                                   "username": username,
@@ -196,7 +196,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               SizedBox(
                                 width: 10,
                               ),
-                              Text("Sign In", style: TextStyle(
+                              Text("Register", style: TextStyle(
                                 fontSize: 18,
                                 color: Colors.white
                               ))
