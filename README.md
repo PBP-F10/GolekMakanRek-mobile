@@ -1,5 +1,6 @@
 <!-- Kalau ada yang mau ditambah/diedit boleh yaa, misal mau tambah emoji, bikin bagus tampilannya, dll. -->
 # 🍲 GolekMakanRek-Mobile!  🍜
+[![Build status](https://build.appcenter.ms/v0.1/apps/a95e875b-067a-4437-80b4-4862d81e17c4/branches/main/badge)](https://appcenter.ms)
 
 **GolekMakanRek!** adalah aplikasi untuk Anda para penduduk dan juga turis di Surabaya untuk memilih kuliner sesuai selera.
 
