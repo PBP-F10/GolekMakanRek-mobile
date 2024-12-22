@@ -1,7 +1,3 @@
-// To parse this JSON data, do
-//
-//     final restaurant = restaurantFromJson(jsonString);
-
 import 'dart:convert';
 
 List<Restaurant> restaurantFromJson(String str) => List<Restaurant>.from(json.decode(str).map((x) => Restaurant.fromJson(x)));
@@ -9,7 +5,7 @@ List<Restaurant> restaurantFromJson(String str) => List<Restaurant>.from(json.de
 String restaurantToJson(List<Restaurant> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class Restaurant {
-    Model model;
+    String model;
     String pk;
     Fields fields;
 
@@ -20,13 +16,13 @@ class Restaurant {
     });
 
     factory Restaurant.fromJson(Map<String, dynamic> json) => Restaurant(
-        model: modelValues.map[json["model"]]!,
+        model: json["model"],
         pk: json["pk"],
         fields: Fields.fromJson(json["fields"]),
     );
 
     Map<String, dynamic> toJson() => {
-        "model": modelValues.reverse[model],
+        "model": model,
         "pk": pk,
         "fields": fields.toJson(),
     };
@@ -54,25 +50,4 @@ class Fields {
         "kategori": kategori,
         "deskripsi": deskripsi,
     };
-}
-
-enum Model {
-    // ignore: constant_identifier_names
-    MAIN_RESTAURANT
-}
-
-final modelValues = EnumValues({
-    "main.restaurant": Model.MAIN_RESTAURANT
-});
-
-class EnumValues<T> {
-    Map<String, T> map;
-    late Map<T, String> reverseMap;
-
-    EnumValues(this.map);
-
-    Map<T, String> get reverse {
-            reverseMap = map.map((k, v) => MapEntry(v, k));
-            return reverseMap;
-    }
 }

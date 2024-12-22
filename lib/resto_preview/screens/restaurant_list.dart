@@ -102,6 +102,7 @@ class _RestaurantListState extends State<RestaurantList> with SingleTickerProvid
             fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       drawer: const LeftDrawer(),

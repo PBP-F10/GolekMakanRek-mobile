@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:golekmakanrek_mobile/homepage/screens/item_list.dart';
 import 'package:golekmakanrek_mobile/resto_preview/screens/restaurant_list.dart';
 import 'package:golekmakanrek_mobile/screens/about.dart';
-import 'package:golekmakanrek_mobile/authentication/screens/login.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:golekmakanrek_mobile/forum/screens/forum.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -25,7 +25,7 @@ class _MainScreenState extends State<MainScreen> {
     ];
 
     if (request.loggedIn) {
-      baseWidgets.add(const ItemList()); // todo: navigate to forum page
+      baseWidgets.add(const ForumPage());
     }
 
     return baseWidgets;

@@ -59,6 +59,7 @@ class _AboutPageState extends State<AboutPage> {
         title: Text(
           'About GolekMakanRek!',
         ),
+        centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.orange[800]),
