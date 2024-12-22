@@ -74,44 +74,49 @@ class _CreatePostPageState extends State<CreatePostPage> {
   }
 
   Future<void> _submitPost() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+  if (_formKey.currentState!.validate()) {
+    setState(() {
+      _isLoading = true;
+    });
 
-      try {
-        final request = context.read<CookieRequest>();
+    try {
+      final request = context.read<CookieRequest>();
 
-        final response = await request.post(
-          'https://ideal-eureka-r4gxwv6xrv5gh5565-8000.app.github.dev/forum/create_post_flutter/',
-          {
-            'text': _textController.text,
-            'restaurant_id': _selectedRestaurant,
-          },
-        );
-
-        if (response['status'] == 'success') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response['message'])),
-          );
-          Navigator.pop(context, true); // Pass true to indicate a new post
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(response['message'] ?? 'Error creating post.')),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
+      // Prepare the data for the request
+      final data = {
+        'text': _textController.text,
+      };
+      if (_selectedRestaurant != null) {
+        data['restaurant_id'] = _selectedRestaurant!;
       }
+
+      final response = await request.post(
+        'https://ideal-eureka-r4gxwv6xrv5gh5565-8000.app.github.dev/forum/create_post_flutter/',
+        data,
+      );
+
+      if (response['status'] == 'success') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response['message'])),
+        );
+        Navigator.pop(context, true); // Pass true to indicate a new post
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(response['message'] ?? 'Error creating post.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
+}
 
   Widget _buildRestaurantSearch() {
     return Column(
