@@ -43,7 +43,7 @@ class _MainScreenState extends State<MainScreen> {
         label: 'About',
       ),
       const BottomNavigationBarItem(
-        icon: Icon(Icons.restaurant_menu),
+        icon: Icon(Icons.store),
         label: 'Restaurant',
       ),
     ];
