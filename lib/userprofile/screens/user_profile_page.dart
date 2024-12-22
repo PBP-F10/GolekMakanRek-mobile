@@ -1,6 +1,6 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:golekmakanrek_mobile/userprofile/models/top_liked_foods.dart';
 import 'package:pbp_django_auth/pbp_django_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -17,6 +17,7 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
+  TopLikedFoods? topLikedFoods;
   final _formKey = GlobalKey<FormState>();
   final _dateOfBirthController = TextEditingController();
   String _username = "";
@@ -33,6 +34,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   void initState() {
     super.initState();
     // Initialize the controller with the current date
+    fetchTopLikedFoods();
   }
 
   @override
@@ -40,6 +42,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
     // Dispose of the controller when the widget is disposed
     _dateOfBirthController.dispose();
     super.dispose();
+  }
+
+  Future<void> fetchTopLikedFoods() async {
+    try {
+      CookieRequest request = CookieRequest();
+      final response = await request.get('https://joshua-montolalu-golekmakanrek.pbp.cs.ui.ac.id/userprofile/userprofile/top-liked-foods');
+      topLikedFoods = TopLikedFoods.fromJson(response);
+    // ignore: empty_catches
+    } catch (e) {}
   }
 
   Future<UserProfile> fetchUserProfile(CookieRequest request) async {
@@ -338,7 +349,105 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 30,)
+              const SizedBox(height: 30,),
+
+              // Horizontal view for top liked foods
+              if (topLikedFoods != null && topLikedFoods!.topLikedFoods.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Top Liked Foods",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 200,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: topLikedFoods!.topLikedFoods.length,
+                        itemBuilder: (context, index) {
+                          final food = topLikedFoods!.topLikedFoods[index];
+                          return Container(
+                            width: 150,
+                            margin: const EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Food image placeholder
+                                Container(
+                                  height: 100,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade200,
+                                    borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(10),
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.fastfood,
+                                    size: 50,
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        food.nama,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        "Likes: ${food.likeCount}",
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        "Price: \$${food.hargaSetelahDiskon}",
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 50,)
+                  ],
+                )
+              else
+                const SizedBox.shrink(),
+
             ],
           ),
         ),
