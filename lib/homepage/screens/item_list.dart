@@ -20,7 +20,7 @@ class ItemList extends StatefulWidget {
 class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
-  bool _favoritedItems = false;
+  bool _favoritedOnly = false;
   final HashSet _starredItems = HashSet();
   final Map<String, int> _starCounts = {};
   bool loggedIn = false;
@@ -33,13 +33,15 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
   int _totalFoods = 0;
   int _totalRestaurants = 0;
   List<String>? _categories;
-  final Map<String, bool> _selectedCategories = {};
   Future<List<Food>>? _foodFuture;
   Future<List<Restaurant>>? _restaurantFuture;
   final NumberFormat _currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-  String? _selectedCategory;
   bool _isFilterLoading = true;
   bool _isListLoading = false;
+
+  // Separate filter states for food and restaurant
+  String? _selectedFoodCategory = "";
+  String? _selectedRestaurantCategory = "";
 
   @override
   void initState() {
@@ -180,11 +182,6 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
       _minPrice = data['minPrice'].toDouble();
       _maxPrice = data['maxPrice'].toDouble();
     });
-
-    // Initialize selected categories
-    for (var category in _categories!) {
-      _selectedCategories[category] = false;
-    }
   }
 
   void _showFilterOptions() {
@@ -196,8 +193,8 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
     // Create temporary variables and ensure they're within bounds
     double tempMinPrice = min(max(_currentMinPrice, _minPrice), _maxPrice);
     double tempMaxPrice = min(max(_currentMaxPrice, _minPrice), _maxPrice);
-    String? tempCategory = _selectedCategory;
-    bool tempFavorited = _favoritedItems;
+    String? tempCategory = _tabController.index == 0 ? _selectedFoodCategory : _selectedRestaurantCategory;
+    bool tempFavorited = _favoritedOnly;
     
     if (_isFilterLoading) {
       // If filters are still loading, wait for them to complete first
@@ -214,13 +211,6 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
 
   void _showFilterSheet(double initialSize, double tempMinPrice, double tempMaxPrice, String? tempCategory, bool tempFavorited) {
     final ScrollController modalScrollController = ScrollController();
-    
-    // Store original values to restore on cancel
-    final originalMinPrice = _currentMinPrice;
-    final originalMaxPrice = _currentMaxPrice;
-    final originalCategory = _selectedCategory;
-    final originalFavorited = _favoritedItems;
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -489,15 +479,15 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
                           setState(() {
                             _currentMinPrice = tempMinPrice;
                             _currentMaxPrice = tempMaxPrice;
-                            _selectedCategory = tempCategory;
-                            _favoritedItems = tempFavorited;
+                            if (_tabController.index == 0) {
+                              _selectedFoodCategory = tempCategory;
+                              _favoritedOnly = tempFavorited;
+                              _searchFood(_searchController.text, _selectedFoodCategory ?? "", _currentMinPrice, _currentMaxPrice, _favoritedOnly);
+                            } else {
+                              _selectedRestaurantCategory = tempCategory;
+                              _searchRestaurant(_searchController.text, _selectedRestaurantCategory ?? "");
+                            }
                           });
-                          if (_tabController.index == 0) {
-                            _searchFood(_searchController.text, tempCategory ?? "", tempMinPrice, tempMaxPrice, tempFavorited);
-                          }
-                          else {
-                            _searchRestaurant(_searchController.text, tempCategory ?? "");
-                          }
                           Navigator.pop(context);
                         },
                         style: ElevatedButton.styleFrom(
@@ -525,14 +515,9 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
         );
       },
     ).whenComplete(() {
-      // Reset text controllers and state to original values if modal was dismissed
-      if (_currentMinPrice == originalMinPrice && 
-          _currentMaxPrice == originalMaxPrice && 
-          _selectedCategory == originalCategory && 
-          _favoritedItems == originalFavorited) {
-        _minPriceController.text = originalMinPrice.toInt().toString();
-        _maxPriceController.text = originalMaxPrice.toInt().toString();
-      }
+      // Reset text controllers and state to current valid values
+      _minPriceController.text = _currentMinPrice.toInt().toString();
+      _maxPriceController.text = _currentMaxPrice.toInt().toString();
       modalScrollController.dispose();
     });
   }
@@ -583,10 +568,10 @@ class _ItemListState extends State<ItemList> with SingleTickerProviderStateMixin
               style: const TextStyle(fontSize: 14),
               onSubmitted: (value) {
                 if (_tabController.index == 0) {
-                  _searchFood(value, _selectedCategory ?? "", _currentMinPrice, _currentMaxPrice, _favoritedItems);
+                  _searchFood(value, _selectedFoodCategory ?? "", _currentMinPrice, _currentMaxPrice, _favoritedOnly);
                 }
                 else {
-                  _searchRestaurant(value, _selectedCategory ?? "");
+                  _searchRestaurant(value, _selectedRestaurantCategory ?? "");
                 }
               },
             ),
