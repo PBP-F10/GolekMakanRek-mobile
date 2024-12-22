@@ -1,9 +1,5 @@
 <!-- Kalau ada yang mau ditambah/diedit boleh yaa, misal mau tambah emoji, bikin bagus tampilannya, dll. -->
 # 🍲 GolekMakanRek-Mobile!  🍜
-[![Deploy](https://github.com/PBP-F10/GolekMakanRek-mobile/actions/workflows/deploy.yml/badge.svg)](https://github.com/PBP-F10/GolekMakanRek-mobile/actions/workflows/deploy.yml)
-[![Pre-Release](https://github.com/PBP-F10/GolekMakanRek-mobile/actions/workflows/pre-release.yml/badge.svg)](https://github.com/PBP-F10/GolekMakanRek-mobile/actions/workflows/pre-release.yml)
-[![Release](https://github.com/PBP-F10/GolekMakanRek-mobile/actions/workflows/release.yml/badge.svg)](https://github.com/PBP-F10/GolekMakanRek-mobile/actions/workflows/release.yml)
-[![Build status](https://build.appcenter.ms/v0.1/apps/a95e875b-067a-4437-80b4-4862d81e17c4/branches/main/badge)](https://appcenter.ms)
 
 **GolekMakanRek!** adalah aplikasi untuk Anda para penduduk dan juga turis di Surabaya untuk memilih kuliner sesuai selera.
 
@@ -32,7 +28,7 @@ Berikut adalah daftar modul yang akan di-implementasikan:
 | Modul | Pengembang | Penjelasan |
 | -- | -- | -- |
 | **Autentikasi & Admin** | All | **Autentikasi:** Berperan mengatur Registrasi dan Login akun pengguna dan admin. <br> **Admin:** Berperan dalam mengelola konten aplikasi. Admin memiliki hak untuk menambahkan, menghapus, dan mengubah data restoran atau makanan. Selain itu, Admin juga dapat mengawasi dan memoderasi ulasan pengguna. |
-| **User Dashboard** | Bram | Berisikan informasi pengguna seperti nama, umur, nomor handphone, dan alamat. Pengguna juga dapat mengedit informasi pribadinya. |
+| **User Dashboard** | Bram | Berisikan informasi pengguna seperti nama, umur, nomor handphone, dan alamat. Pengguna juga dapat mengedit informasi pribadinya. Selain itu, pengguna juga dapat memperoleh informasi Top 3 product recomendations|
 | **Homepage: Search, Filter, Like** | Joshua | Pada homepage, pengguna dapat melihat dan mencari dari data-data yang tersedia pada aplikasi. Pengguna dapat memilih untuk mencari dari daftar restoran ataupun daftar makanan. Selain itu, pengguna dapat melakukan reaction yaitu menyukai makanan yang ditampilkan pada Homepage. Nantinya, angka dari *like* tersebut akan dijumlahkan dari semua user yang menyukai makanan tersebut. |
 | **Restaurant Preview & Follow** | Ais | Fitur ini menampilkan restoran-restoran beserta deskripsinya. Ditampilkan pula daftar menu yang tersedia. Pengguna dapat memberikan rating yang hasilnya akan terakumulasi sebagai rating restoran dan melakukan _follow-unfollow_ restoran. |
 | **Food Preview** | Hafizh | Pada fitur Food Preview, pengguna dapat memberikan ulasan dan rating mengenai produk makanan yang ada pada setiap restoran. Setiap ulasan yang diberikan akan ditampikan ketika pengguna melakukan klik pada button terkait “ulasan produk”. Selain itu, terdapat penghitungan rating yang memungkinkan hasil rata-rata dari setiap rating yang diberikan pengguna akan ditampilkan pada masing-masing produk makanan. |
@@ -50,8 +46,8 @@ Pengguna yang sudah melakukan register dan login dapat:
 #### b. 🔒 Pengguna (belum terautentikasi)
 Pengguna yang belum melakukan register dan login hanya dapat:
 - Membuka homepage.
-- Melakukan pencarian dan filtering daftar makanan dan restoran.
-- Membuka fitur food preview dan restaurant preview.
+- Melakukan pencarian dan filtering daftar makanan dan restoran. 
+- Membuka fitur food preview dan restaurant preview tetapi tidak bisa memberikan rating maupun ulasan.
 
 ## Alur Integrasi
 Alur integrasi aplikasi Flutter ke proyek web kami adalah sebagai berikut:
@@ -62,6 +58,12 @@ Alur integrasi aplikasi Flutter ke proyek web kami adalah sebagai berikut:
 
 ## *Dataset* yang Digunakan
 Dataset yang digunakan berasal dari [Kaggle - Indonesia food delivery Gofood product list](https://www.kaggle.com/datasets/ariqsyahalam/indonesia-food-delivery-gofood-product-list).
+
+## Video Aplikasi
+Link video iklan aplikasi [GolekMakanRek! - Aplikasi Pecinta Kuliner Surabaya](https://youtu.be/GJ1O_FzHVio).
+
+## Link Aplikasi
+Link Aplikasi dapas diakses di [GolekMakanRek! - App](https://install.appcenter.ms/orgs/pbp-f10/apps/golekmakanrek/distribution_groups/public/releases/5).
 
 ## Berita Acara Kelompok F10
 Berita acara kelompok F10 dapat diakses di [link berikut](https://docs.google.com/spreadsheets/d/1wk12z7HfZcbrUoaX8TTx7DbVCwNlyiNLAyX6wdyXSx8/edit?gid=0#gid=0)
